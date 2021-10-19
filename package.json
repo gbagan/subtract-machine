@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "purescript": "^0.14.4",
+    "rollup": "^2.58.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "sass": "^1.42.1",
+    "spago": "^0.20.3"
+  },
+  "scripts": {
+    "build": "spago bundle-app --to dist/bundle.js",
+    "build2": "spago build --purs-args '--codegen corefn,js'",
+    "dce": "zephyr -e -f Main.main",
+    "rollup": "rollup -c",
+    "buildcss": "sass src/style.scss dist/bundle.css",
+    "deploy:test": "scp -r dist/* gbagan@connect.liris.cnrs.fr:~/machine/"
+  }
+}
