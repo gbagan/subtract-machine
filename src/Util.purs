@@ -18,3 +18,6 @@ randomPick t
     | otherwise    = do
             i <- randomInt 0 (Array.length t - 1)
             pure $ t !! i
+
+map2 ∷ ∀a b c. Array a → Array b → (Int → a → b → c) → Array c
+map2 t1 t2 fn = Array.zipWith ($) (Array.mapWithIndex fn t1) t2
