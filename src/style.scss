@@ -1,5 +1,67 @@
+.sm-main {
+    display: flex;
+    flex-direction: row;
+}
+
+.sm-main-machine {
+    display: flex;
+    flex-direction: column;
+}
+
 .config-main {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-gap: 1em;
+}
+
+.sm-machine-main {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-gap: 1em;
+}
+
+.sm-pigeonhole-svg {
+    display: block;
+    width: 100px;
+    height: 150px;
+}
+
+.sm-pigeonhole-no {
+    display: block;
+    font-weight: bold;
+}
+
+
+.ball-counter-group {
+    display: flex;
+    flex-direction: row;
+}
+
+.ball-counter {
+    width: 1.5em;
+    height: 1em;
+}
+
+.sm-score {
+    display: flex;
+    flex-direction: row;   
+    justify-content: space-between;
+}
+
+.sm-score-progress {
+    --track-color: red;
+    --height: 1.5em;
+    width: 80%;
+}
+
+.sm-victory {
+    color: rgb(var(--sl-color-neutral-500));
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.sm-loss {
+    color: red;
+    font-weight: bold;
+    font-size: 1rem;
 }
