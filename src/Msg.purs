@@ -1,13 +1,13 @@
 module SM.Msg where
-import Web.Event.Event (Event)
 
 data Msg = 
       InitMachine
     | NextGame
     | RunMachine
-    | SetAdversary Event
+    | SetAdversary String
     | SetReward String
     | SetPenalty String
-    | SetBallsPerColor Event
-    | SetNbPigeonholes Event
-    | SetPossibleMove Int Event
+    | SetBallsPerColor Int
+    | SetNbPigeonholes Int
+    | SetPossibleMove Int Boolean
+    | SetMachineStarts String

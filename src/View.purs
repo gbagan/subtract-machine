@@ -4,14 +4,20 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array as Array
 import Data.Array ((!!))
 import Data.Int as Int
+import Effect (Effect)
 import Math as Math
 import Pha.Html (Html)
 import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import SM.Util (map2)
-import SM.Model (RawConfig, RootState)
+import SM.Model (RawConfig, State)
 import SM.Msg (Msg(..))
+import Web.Event.Event (Event)
+
+foreign import slIntValue :: Event -> Effect Int
+foreign import slStringValue :: Event -> Effect String
+foreign import slChecked :: Event -> Effect Boolean
 
 colors :: Array(String)
 colors = ["yellow", "red", "cyan", "lightgreen", "magenta"]
@@ -38,12 +44,11 @@ drawPigeonhole i nbBalls =
         ]
     ,   H.div [H.class_ "sm-pigeonhole-no"] [H.text $ show (i + 1)]
     ,   H.div [H.class_ "ball-counter-group"] $
-        map2 nbBalls colors \_ n color ->
+        map2 nbBalls colors \n color ->
             H.div [H.class_ "ball-counter", H.style "background-color" color]
             [   H.text $ show n
             ]
     ]
-
 
 scoreView :: forall a. Int -> Int -> Html a
 scoreView nbVictories nbLosses =
@@ -58,8 +63,7 @@ scoreView nbVictories nbLosses =
                                         50.0
                                     else
                                         100.0 * Int.toNumber nbVictories / Int.toNumber n
-                ] 
-                []
+                ] []
         ,   H.span [H.class_ "sm-loss"] [H.text $ "Défaites: " <> show nbLosses]
         ]
     ]
@@ -82,14 +86,14 @@ configView {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, pena
         ,   H.div [] $
             possibleMoves # Array.mapWithIndex \i checked ->
                 H.elem "sl-checkbox" [ P.checked checked
-                                     , E.on "sl-change" \ev -> pure $ Just (SetPossibleMove i ev)
+                                     , E.on "sl-change" \ev -> Just <$> SetPossibleMove i <$> slChecked ev
                                      ]
                 [   H.text $ show (i+1)
                 ]
         ,   H.div [] [H.text "Adversaire"]
         ,   H.elem "sl-select"
                 [ P.value adversary
-                , E.on "sl-change" \ev -> pure $ Just (SetAdversary ev)
+                , E.on "sl-change" \ev -> Just <$> SetAdversary <$> slStringValue ev
                 ]
             [   H.elem "sl-menu-item" [P.value "random"] [H.text "Aléatoire"]
             ,   H.elem "sl-menu-item" [P.value "expert"] [H.text "Expert"]
@@ -98,24 +102,31 @@ configView {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, pena
         ,   H.div [] [H.text "Nombre de casiers"]
         ,   H.elem "sl-range" [ H.attr "min" "8"
                               , H.attr "max" "16"
-                              , P.value nbPigeonholes
-                              , E.on "sl-change" \ev -> pure $ Just (SetNbPigeonholes ev)
-                              ]
-                              []
+                              , P.value $ show nbPigeonholes
+                              , E.on "sl-change" \ev -> Just <$> SetNbPigeonholes <$> slIntValue ev
+                              ] []
         ,   H.div [] [H.text "Billes par couleur"]
         ,   H.elem "sl-range" [ H.attr "min" "2"
                               , H.attr "max" "10"
-                              , P.value ballsPerColor
-                              , E.on "sl-change" \ev -> pure $ Just (SetBallsPerColor ev)
+                              , P.value $ show ballsPerColor
+                              , E.on "sl-change" \ev -> Just <$> SetBallsPerColor <$> slIntValue ev
                               ] []
         ,   H.div [] [H.text "Récompense"]
-        ,   H.elem "sl-input" [P.type_ "number", H.attr "min" "1", P.value reward] [] 
+        ,   H.elem "sl-input" [ P.type_ "number"
+                              , H.attr "min" "1"
+                              , P.value reward
+                              , E.on "sl-change" \ev -> Just <$> SetReward <$> slStringValue ev
+                              ] []
         ,   H.div [] [H.text "Pénalité"]
-        ,   H.elem "sl-input" [P.type_ "number", H.attr "max" "0", P.value penalty] []
+        ,   H.elem "sl-input" [ P.type_ "number"
+                              , H.attr "max" "0"
+                              , P.value penalty
+                              , E.on "sl-change" \ev -> Just <$> SetPenalty <$> slStringValue ev
+                              ] []
         ,   H.div [] [H.text "La machine commence"]
-        ,   H.elem "sl-radio-group" []
-            [   H.elem "sl-radio" [P.value "y", P.checked true] [H.text "Oui"]
-            ,   H.elem "sl-radio" [P.value "n"] [H.text "Non"]
+        ,   H.elem "sl-radio-group" [E.on "sl-change" \ev -> Just <$> SetMachineStarts <$> slStringValue ev]
+            [   H.elem "sl-radio" [P.value "y", P.checked machineStarts] [H.text "Oui"]
+            ,   H.elem "sl-radio" [P.value "n", P.checked $ not machineStarts] [H.text "Non"]
             ]
         ,   H.elem "sl-button" [E.onClick \_ -> InitMachine] [H.text "Préparer la machine"]
         ,   H.elem "sl-button" [E.onClick \_ -> RunMachine] [H.text "Lancer la machine"]
@@ -123,7 +134,7 @@ configView {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, pena
         ]
     ]
 
-view ∷ RootState -> Html Msg
+view ∷ State -> Html Msg
 view state =
     H.div [H.class_ "sm-main"]
     [   H.div [H.class_ "sm-main-machine"]
