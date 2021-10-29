@@ -42,7 +42,16 @@
     height: 1em;
 }
 
+.sm-possiblemoves {
+    width: 100%;
+    display: flex;
+    flex-direction: row;   
+    justify-content: space-between;
+}
+
 .sm-score {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
     display: flex;
     flex-direction: row;   
     justify-content: space-between;

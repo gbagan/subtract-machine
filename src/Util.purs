@@ -11,7 +11,7 @@ repeat ∷ ∀a. Int → (Int → a) → Array a
 repeat 0 _ = []
 repeat n f = f <$> 0 .. (n - 1)
 
-randomPick :: ∀a. Array a → Effect (Maybe a)
+randomPick ∷ ∀a. Array a → Effect (Maybe a)
 randomPick [] = pure Nothing
 randomPick t  = (t !! _) <$> randomInt 0 (Array.length t - 1)
 
