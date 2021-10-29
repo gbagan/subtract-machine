@@ -1,4 +1,4 @@
-module SM.View where
+module SM.View (view) where
 
 import Prelude
 
@@ -12,16 +12,16 @@ import Pha.Html (Html)
 import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
+import Web.Event.Event (Event)
 import SM.Model (RawConfig, State, Status(..), GameResult)
 import SM.Msg (Msg(..))
 import SM.Util (map2)
-import Web.Event.Event (Event)
 
 foreign import slIntValue ∷ Event → Effect Int
 foreign import slStringValue ∷ Event → Effect String
 foreign import slChecked ∷ Event → Effect Boolean
 
-colors ∷ Array(String)
+colors ∷ Array String
 colors = ["yellow", "red", "cyan", "lightgreen", "magenta"]
 
 pseudoRandom ∷ Int → Number
@@ -83,13 +83,13 @@ machineView nbBalls =
         nbBalls # Array.mapWithIndex drawPigeonhole
 
 configView ∷ RawConfig → Status → Html Msg
-configView {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, penalty, machineStarts} status =
+configView conf status =
     H.elem "sl-card" []
     [   H.div [H.attr "slot" "header"] [H.text "Choix des paramètres"]
     ,   H.div [H.class_ "config-main"] 
         [   H.div [] [H.text "Coups possibles"]
         ,   H.div [H.class_ "sm-possiblemoves"] $
-            possibleMoves # Array.mapWithIndex \i checked →
+            conf.possibleMoves # Array.mapWithIndex \i checked →
                 H.elem "sl-checkbox" [ P.checked checked
                                      , E.on "sl-change" \ev → Just <$> SetPossibleMove i <$> slChecked ev
                                      ]
@@ -97,7 +97,7 @@ configView {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, pena
                 ]
         ,   H.div [] [H.text "Adversaire"]
         ,   H.elem "sl-select"
-                [ P.value adversary
+                [ P.value conf.adversary
                 , E.on "sl-change" \ev → Just <$> SetAdversary <$> slStringValue ev
                 ]
             [   H.elem "sl-menu-item" [P.value "random"] [H.text "Aléatoire"]
@@ -107,31 +107,31 @@ configView {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, pena
         ,   H.div [] [H.text "Nombre de casiers"]
         ,   H.elem "sl-range" [ P.min 8
                               , P.max 16
-                              , P.value $ show nbPigeonholes
+                              , P.value $ show conf.nbPigeonholes
                               , E.on "sl-change" \ev → Just <$> SetNbPigeonholes <$> slIntValue ev
                               ] []
         ,   H.div [] [H.text "Billes par couleur"]
         ,   H.elem "sl-range" [ P.min 2
                               , P.max 10
-                              , P.value $ show ballsPerColor
+                              , P.value $ show conf.ballsPerColor
                               , E.on "sl-change" \ev → Just <$> SetBallsPerColor <$> slIntValue ev
                               ] []
         ,   H.div [] [H.text "Récompense"]
         ,   H.elem "sl-input" [ P.type_ "number"
                               , P.min 1
-                              , P.value reward
+                              , P.value conf.reward
                               , E.on "sl-change" \ev → Just <$> SetReward <$> slStringValue ev
                               ] []
         ,   H.div [] [H.text "Pénalité"]
         ,   H.elem "sl-input" [ P.type_ "number"
                               , P.max 0
-                              , P.value penalty
+                              , P.value conf.penalty
                               , E.on "sl-change" \ev → Just <$> SetPenalty <$> slStringValue ev
                               ] []
         ,   H.div [] [H.text "La machine commence"]
         ,   H.elem "sl-radio-group" [E.on "sl-change" \ev → Just <$> SetMachineStarts <$> slStringValue ev]
-            [   H.elem "sl-radio" [P.value "y", P.checked machineStarts] [H.text "Oui"]
-            ,   H.elem "sl-radio" [P.value "n", P.checked $ not machineStarts] [H.text "Non"]
+            [   H.elem "sl-radio" [P.value "y", P.checked conf.machineStarts] [H.text "Oui"]
+            ,   H.elem "sl-radio" [P.value "n", P.checked $ not conf.machineStarts] [H.text "Non"]
             ]
         ,   H.elem "sl-button" [E.onClick \_ → InitMachine] [H.text "Préparer la machine"]
         ,   if status == Stopped then

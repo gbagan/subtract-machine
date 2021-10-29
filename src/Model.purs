@@ -44,31 +44,32 @@ type RawConfig =
     }
 
 type State = 
-    { config ∷ Config
-    , rawConfig ∷ RawConfig
-    , nbVictories ∷ Int
-    , nbLosses ∷ Int
-    , nbBalls ∷ Array (Array Int)
-    , losingPositions ∷ Array Boolean
-    , status ∷ Status
-    , gameResult ∷ Maybe GameResult
+    {   config ∷ Config
+    ,   rawConfig ∷ RawConfig
+    ,   nbVictories ∷ Int
+    ,   nbLosses ∷ Int
+    ,   nbBalls ∷ Array (Array Int)
+    ,   losingPositions ∷ Array Boolean
+    ,   status ∷ Status
+    ,   gameResult ∷ Maybe GameResult
     }
 
+-- convertPossibleMoves [false, true, true, false, fale] = [2, 3]
 convertPossibleMoves ∷ Array Boolean → Array Int
 convertPossibleMoves = Array.catMaybes <<< Array.mapWithIndex \i b → if b then Just (i + 1) else Nothing
 
 rawConfigToConfig ∷ RawConfig → Maybe Config
 rawConfigToConfig c = do
     let possibleMoves = convertPossibleMoves c.possibleMoves
-    adversary <- case c.adversary of
+    adversary ← case c.adversary of
                     "random" → Just Random
                     "expert" → Just Expert
                     "machine" → Just Machine
                     _ → Nothing
     let nbPigeonholes = c.nbPigeonholes
     let ballsPerColor = c.ballsPerColor
-    reward <- Int.fromString c.reward
-    penalty <- Int.fromString c.penalty
+    reward ← Int.fromString c.reward
+    penalty ← Int.fromString c.penalty
     let machineStarts = c.machineStarts
     pure {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, penalty, machineStarts}
 
@@ -78,16 +79,14 @@ losingPositions size moves = t <#> force where
     t = repeat size \i → defer
             \_ → moves # Array.all \m → maybe true (not <<< force) (t !! (i - m))
 
-
 -- les 4 fonctions suivantes renvoient l'index dans posssibleMoves du coup
 randomPlays ∷ State → Int → Effect (Maybe Int)
 randomPlays st pos =
     let nbBalls = fromMaybe [] (st.nbBalls !! (pos-1)) in
-    if nbBalls == [] then
+    if Array.null nbBalls then
         pure Nothing
     else
         Just <$> randomInt 0 (Array.length nbBalls - 1)
-
 
 expertPlays ∷ State → Int → Effect (Maybe Int)
 expertPlays st pos
@@ -111,7 +110,7 @@ adversaryPlays st pos =
 runGame ∷ State → Effect GameResult
 runGame st = tailRecM go {moves: [], pos: st.config.nbPigeonholes, isMachineTurn: st.config.machineStarts} where
     go {pos, moves, isMachineTurn} = do
-        mmove <- (if isMachineTurn then machinePlays else adversaryPlays) st pos
+        mmove ← (if isMachineTurn then machinePlays else adversaryPlays) st pos
         case mmove of
             Nothing → pure $ Done {moves, win: not isMachineTurn}
             Just move → pure $ Loop { moves: moves `Array.snoc` { pos
@@ -119,9 +118,9 @@ runGame st = tailRecM go {moves: [], pos: st.config.nbPigeonholes, isMachineTurn
                                                                 , taken: fromMaybe 0 $ st.config.possibleMoves !! move
                                                                 , isMachineTurn
                                                                 }
-                                     , isMachineTurn: not isMachineTurn
-                                     , pos: pos - (st.config.possibleMoves !! move # fromMaybe 0)
-                                     }
+                                    , isMachineTurn: not isMachineTurn
+                                    , pos: pos - (st.config.possibleMoves !! move # fromMaybe 0)
+                                    }
 
 adjustBalls ∷ State → GameResult → State
 adjustBalls st {moves, win} = 
@@ -137,16 +136,16 @@ adjustBalls st {moves, win} =
                                             st.config.penalty
                                         ))
                             ) st.nbBalls
-                        <#> (\balls → if Array.all (_ == 0) balls then 
+                        <#> \balls → if Array.all (_ == 0) balls then 
                                             Array.replicate (Array.length balls) st.config.ballsPerColor
                                         else
                                             balls
-                            )
+                            
     in st { nbBalls = nbBalls
           , nbVictories = st.nbVictories + (if win then 1 else 0) 
           , nbLosses = st.nbLosses + (if win then 0 else 1)
           , gameResult = Just {moves, win}
-          }         
+          }
 
 nextGame ∷ State → Effect State
 nextGame st = runGame st <#> adjustBalls st
@@ -165,7 +164,7 @@ initMachine st =
        }
 
 state ∷ State
-state = 
+state = initMachine
     {   config: 
         {   possibleMoves: [1, 2]
         ,   adversary: Random
@@ -190,4 +189,4 @@ state =
     ,   losingPositions: []
     ,   status: Stopped
     ,   gameResult: Nothing
-    } # initMachine
+    }

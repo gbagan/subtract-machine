@@ -1,4 +1,4 @@
-module SM.Update where
+module SM.Update (update) where
 
 import Prelude
 import Control.Monad.Rec.Class (tailRecM, Step(..))
@@ -13,6 +13,7 @@ import SM.Model (RawConfig, State, Status(..), initMachine, rawConfigToConfig, n
 import SM.Msg (Msg(..))
 import Type.Proxy (Proxy(..))
 
+-- lenses
 _rawConfig ∷ Lens' State RawConfig
 _rawConfig = prop (Proxy ∷ _ "rawConfig")
 _possibleMoves ∷ Lens' RawConfig (Array Boolean)
@@ -30,7 +31,7 @@ update RunMachine = do
     tailRecM go unit
     where
     go _ = do
-        st <- get
+        st ← get
         if st.status /= Running then do
             put st{status = Stopped}
             pure $ Done unit
@@ -42,7 +43,7 @@ update RunMachine = do
 update StopMachine = modify_ _{status = IsStopping}
 
 update NextGame = do
-    st <- get
+    st ← get
     put =<< liftEffect (nextGame st)
 
 update (SetReward n) = _rawConfig %= _{reward = n}
