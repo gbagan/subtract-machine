@@ -113,20 +113,20 @@ runGame st = tailRecM go {moves: [], pos: st.config.nbPigeonholes, isMachineTurn
         mmove ← (if isMachineTurn then machinePlays else adversaryPlays) st pos
         case mmove of
             Nothing → pure $ Done {moves, win: not isMachineTurn}
-            Just move → pure $ Loop { moves: moves `Array.snoc` { pos
-                                                                , move
-                                                                , taken: fromMaybe 0 $ st.config.possibleMoves !! move
-                                                                , isMachineTurn
-                                                                }
+            Just move → pure $ Loop { moves: Array.snoc moves { pos
+                                                              , move
+                                                              , taken: fromMaybe 0 (st.config.possibleMoves !! move)
+                                                              , isMachineTurn
+                                                              }
                                     , isMachineTurn: not isMachineTurn
-                                    , pos: pos - (st.config.possibleMoves !! move # fromMaybe 0)
+                                    , pos: pos - fromMaybe 0 (st.config.possibleMoves !! move)
                                     }
 
 adjustBalls ∷ State → GameResult → State
 adjustBalls st {moves, win} = 
-    let nbBalls = moves # Array.foldl 
-                            (\acc {isMachineTurn, pos, move} →
-                                acc # ix (pos-1) <<< ix move %~ \x →
+    let nbBalls = moves # Array.foldr
+                            (\{isMachineTurn, pos, move} →
+                                ix (pos-1) <<< ix move %~ \x →
                                     max 0 (x + 
                                         (if not isMachineTurn && st.config.adversary /= Machine then
                                             0
@@ -137,7 +137,7 @@ adjustBalls st {moves, win} =
                                         ))
                             ) st.nbBalls
                         <#> \balls → if Array.all (_ == 0) balls then 
-                                            Array.replicate (Array.length balls) st.config.ballsPerColor
+                                            balls <#> const st.config.ballsPerColor
                                         else
                                             balls
                             
@@ -153,9 +153,9 @@ nextGame st = runGame st <#> adjustBalls st
 initMachine ∷ State → State
 initMachine st =
     st { nbBalls = repeat st.config.nbPigeonholes \i →
-                        Array.replicate
-                            (Array.length $ st.config.possibleMoves # Array.filter \j → i + 1 - j >= 0)
-                            st.config.ballsPerColor
+                        st.config.possibleMoves 
+                        # Array.filter (\j → i + 1 - j >= 0)
+                        <#> const st.config.ballsPerColor
        , nbVictories = 0
        , nbLosses = 0
        , losingPositions = losingPositions st.config.nbPigeonholes st.config.possibleMoves
