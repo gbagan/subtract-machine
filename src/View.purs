@@ -56,8 +56,7 @@ showResult ∷ forall a. GameResult → Array (Html a)
 showResult {moves, win} =
     (moves >>= \{isMachineTurn, taken} → 
         [   H.text $ (if isMachineTurn then "la machine" else "l'adversaire") <> " prend " <> show taken <> " jeton" 
-                         <> (if taken > 1 then "s" else ""
-                     )
+                         <> (if taken > 1 then "s" else "")
         ,   H.br
         ]
     ) <> [H.text $ (if win then "la machine" else "l'adversaire") <> " gagne"]
