@@ -2,7 +2,7 @@ module SM.Model where
 
 import Prelude
 
-import Control.Monad.Rec.Class (tailRecM, Step(..))
+import Control.Monad.Rec.Class (class MonadRec, tailRecM, Step(..))
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Int as Int
@@ -10,9 +10,9 @@ import Data.Lazy (defer, force)
 import Data.Lens ((%~))
 import Data.Lens.Index (ix)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Effect (Effect)
-import Effect.Random (randomInt)
-import SM.Util (repeat, randomPick)
+import SM.Random (class Random)
+import SM.Random as Random
+import SM.Util (repeat)
 
 data Adversary = Random | Expert | Machine
 derive instance Eq Adversary
@@ -75,39 +75,39 @@ rawConfigToConfig c = do
 
 -- | renvoie l'ensemble des positions perdantes pour une taille et un ensemble de mouvements donnés
 losingPositions ∷ Int → Array Int → Array Boolean
-losingPositions size moves = t <#> force where
+losingPositions size moves = force <$> t where
     t = repeat size \i → defer
             \_ → moves # Array.all \m → maybe true (not <<< force) (t !! (i - m))
 
 -- les 4 fonctions suivantes renvoient l'index dans posssibleMoves du coup
-randomPlays ∷ State → Int → Effect (Maybe Int)
+randomPlays ∷ ∀m. Random m => State → Int → m (Maybe Int)
 randomPlays st pos =
     let nbBalls = fromMaybe [] (st.nbBalls !! (pos-1)) in
     if Array.null nbBalls then
         pure Nothing
     else
-        Just <$> randomInt 0 (Array.length nbBalls - 1)
+        Just <$> Random.int 0 (Array.length nbBalls - 1)
 
-expertPlays ∷ State → Int → Effect (Maybe Int)
+expertPlays ∷ ∀m. Random m => State → Int → m (Maybe Int)
 expertPlays st pos
     | st.losingPositions !! pos == Just true = randomPlays st pos
     | otherwise = pure $ st.config.possibleMoves # Array.findIndex (\move → st.losingPositions !! (pos - move) == Just true)
 
-machinePlays ∷ State → Int → Effect (Maybe Int)
+machinePlays ∷ ∀m. Random m => State → Int → m (Maybe Int)
 machinePlays st pos =
     let nbBalls = fromMaybe [] (st.nbBalls !! (pos-1)) in
     nbBalls # Array.mapWithIndex (flip Array.replicate)
             # Array.concat
-            # randomPick
+            # Random.pick
 
-adversaryPlays ∷ State → Int → Effect (Maybe Int)
+adversaryPlays ∷ ∀m. Random m => State → Int → m (Maybe Int)
 adversaryPlays st pos =
     case st.config.adversary of
         Random → randomPlays st pos
         Expert → expertPlays st pos
         Machine → machinePlays st pos
 
-runGame ∷ State → Effect GameResult
+runGame ∷ ∀m. MonadRec m => Random m => State → m GameResult
 runGame st = tailRecM go {moves: [], pos: st.config.nbPigeonholes, isMachineTurn: st.config.machineStarts} where
     go {pos, moves, isMachineTurn} = do
         mmove ← (if isMachineTurn then machinePlays else adversaryPlays) st pos
@@ -147,7 +147,7 @@ adjustBalls st {moves, win} =
           , gameResult = Just {moves, win}
           }
 
-nextGame ∷ State → Effect State
+nextGame ∷ ∀m. MonadRec m => Random m => State → m State
 nextGame st = runGame st <#> adjustBalls st
 
 initMachine ∷ State → State
