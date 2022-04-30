@@ -2,12 +2,11 @@
 , dependencies =
   [ "arrays"
   , "datetime"
-  , "debug"
   , "effect"
   , "integers"
   , "lazy"
-  , "math"
   , "maybe"
+  , "numbers"
   , "pha"
   , "prelude"
   , "profunctor-lenses"

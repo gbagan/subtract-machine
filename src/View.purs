@@ -6,8 +6,8 @@ import Data.Array ((!!))
 import Data.Array as Array
 import Data.Int as Int
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Number (floor, sin)
 import Effect (Effect)
-import Math as Math
 import Pha.Html (Html)
 import Pha.Html as H
 import Pha.Html.Attributes as P
@@ -25,8 +25,8 @@ colors ∷ Array String
 colors = ["yellow", "red", "cyan", "lightgreen", "magenta"]
 
 pseudoRandom ∷ Int → Number
-pseudoRandom n = m - Math.floor m where
-                 m = 100.0 * Math.sin (Int.toNumber (n+1))
+pseudoRandom n = m - floor m where
+                 m = 100.0 * sin (Int.toNumber (n+1))
 
 drawPigeonhole ∷ forall a. Int → Array Int → Html a
 drawPigeonhole i nbBalls =
