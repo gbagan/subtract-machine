@@ -128,9 +128,12 @@ configView conf status =
                               , E.on "sl-change" \ev → Just <$> SetPenalty <$> slStringValue ev
                               ] []
         ,   H.div [] [H.text "La machine commence"]
-        ,   H.elem "sl-radio-group" [E.on "sl-change" \ev → Just <$> SetMachineStarts <$> slStringValue ev]
-            [   H.elem "sl-radio" [P.value "y", P.checked conf.machineStarts] [H.text "Oui"]
-            ,   H.elem "sl-radio" [P.value "n", P.checked $ not conf.machineStarts] [H.text "Non"]
+        ,   H.elem "sl-select"
+                [ P.value (if conf.machineStarts then "y" else "n")
+                , E.on "sl-change" \ev → Just <$> SetMachineStarts <$> slStringValue ev
+                ]
+            [   H.elem "sl-menu-item" [P.value "y"] [H.text "Oui"]
+            ,   H.elem "sl-menu-item" [P.value "n"] [H.text "Non"]
             ]
         ,   H.elem "sl-button" [E.onClick \_ → InitMachine] [H.text "Préparer la machine"]
         ,   if status == Stopped then
