@@ -5,7 +5,6 @@ import Prelude
 import Control.Monad.Rec.Class (class MonadRec, tailRecM, Step(..))
 import Data.Array ((!!))
 import Data.Array as Array
-import Data.Int as Int
 import Data.Lazy (defer, force)
 import Data.Lens ((%~))
 import Data.Lens.Index (ix)
@@ -18,7 +17,7 @@ data Adversary = Random | Expert | Machine
 derive instance Eq Adversary
 
 data Status = Running | IsStopping | Stopped
-derive instance Eq Status 
+derive instance Eq Status
 
 type GameResult = { moves ∷ Array { isMachineTurn ∷ Boolean
                                   , pos ∷ Int
@@ -37,19 +36,9 @@ type Config =
     ,   machineStarts ∷ Boolean
     }
 
-type RawConfig =
-    {   possibleMoves ∷ Array Boolean
-    ,   adversary ∷ String
-    ,   nbPigeonholes ∷ Int
-    ,   ballsPerColor ∷ Int
-    ,   reward ∷ String
-    ,   penalty ∷ String
-    ,   machineStarts ∷ Boolean
-    }
-
 type State = 
     {   config ∷ Config
-    ,   rawConfig ∷ RawConfig
+    ,   rawConfig ∷ Config
     ,   nbVictories ∷ Int
     ,   nbLosses ∷ Int
     ,   nbBalls ∷ Array (Array Int)
@@ -58,24 +47,19 @@ type State =
     ,   gameResult ∷ Maybe GameResult
     }
 
--- convertPossibleMoves [false, true, true, false, fale] = [2, 3]
-convertPossibleMoves ∷ Array Boolean → Array Int
-convertPossibleMoves = Array.catMaybes <<< Array.mapWithIndex \i b → if b then Just (i + 1) else Nothing
+adversaryFromString ∷ String → Adversary
+adversaryFromString "expert" = Expert
+adversaryFromString "machine" = Machine
+adversaryFromString _ = Random
 
-rawConfigToConfig ∷ RawConfig → Maybe Config
-rawConfigToConfig c = do
-    let possibleMoves = convertPossibleMoves c.possibleMoves
-    adversary ← case c.adversary of
-                    "random" → Just Random
-                    "expert" → Just Expert
-                    "machine" → Just Machine
-                    _ → Nothing
-    let nbPigeonholes = c.nbPigeonholes
-    let ballsPerColor = c.ballsPerColor
-    reward ← Int.fromString c.reward
-    penalty ← Int.fromString c.penalty
-    let machineStarts = c.machineStarts
-    pure {possibleMoves, adversary, nbPigeonholes, ballsPerColor, reward, penalty, machineStarts}
+adversaryToString ∷ Adversary → String
+adversaryToString Expert = "expert"
+adversaryToString Machine = "machine"
+adversaryToString Random = "random"
+
+updatePossibleMoves ∷ Int → Boolean → Array Int → Array Int
+updatePossibleMoves x true moves = moves # Array.cons x # Array.sort
+updatePossibleMoves x false moves = moves # Array.filter (_ /= x)
 
 -- | renvoie l'ensemble des positions perdantes pour le joueur qui va jouer
 losingPositions ∷ Int → Array Int → Array Boolean
@@ -83,7 +67,7 @@ losingPositions size moves = force <$> t where
     t = repeat size \i → defer
             \_ → moves # Array.all \m → maybe true (not <<< force) (t !! (i - m))
 
--- les 4 fonctions suivantes renvoient l'index dans posssibleMoves du coup
+-- les 4 fonctions suivantes renvoient l'index dans posssibleMoves du coup joué
 randomPlays ∷ ∀m. Random m ⇒ State → Int → m (Maybe Int)
 randomPlays st pos =
     let nbBalls = fromMaybe [] (st.nbBalls !! (pos-1)) in
@@ -169,7 +153,17 @@ initMachine st =
 
 state ∷ State
 state = initMachine
-    {   config: 
+    {   config
+    ,   rawConfig: config
+    ,   nbVictories: 0
+    ,   nbLosses: 0
+    ,   nbBalls: []
+    ,   losingPositions: []
+    ,   status: Stopped
+    ,   gameResult: Nothing
+    }
+    where
+    config =
         {   possibleMoves: [1, 2]
         ,   adversary: Random
         ,   nbPigeonholes: 8
@@ -178,19 +172,3 @@ state = initMachine
         ,   penalty: -1
         ,   machineStarts: true
         }
-    ,   rawConfig:
-        {   possibleMoves: [true, true, false, false, false]
-        ,   adversary: "random"
-        ,   nbPigeonholes: 8
-        ,   ballsPerColor: 6
-        ,   reward: "3"
-        ,   penalty: "-1"
-        ,   machineStarts: true
-        }
-    ,   nbVictories: 0
-    ,   nbLosses: 0
-    ,   nbBalls: []
-    ,   losingPositions: []
-    ,   status: Stopped
-    ,   gameResult: Nothing
-    }

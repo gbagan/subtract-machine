@@ -2,7 +2,7 @@ module SM.View (view) where
 
 import Prelude
 
-import Data.Array ((!!))
+import Data.Array ((!!), (..))
 import Data.Array as Array
 import Data.Int as Int
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -13,7 +13,7 @@ import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Web.Event.Event (Event)
-import SM.Model (RawConfig, State, Status(..), GameResult)
+import SM.Model (Config, State, Status(..), GameResult, adversaryToString)
 import SM.Msg (Msg(..))
 import SM.Util (map2)
 
@@ -81,22 +81,22 @@ machineView nbBalls =
     H.div [H.class_ "sm-machine-main"] $
         nbBalls # Array.mapWithIndex drawPigeonhole
 
-configView ∷ RawConfig → Status → Html Msg
+configView ∷ Config → Status → Html Msg
 configView conf status =
     H.elem "sl-card" []
     [   H.div [H.attr "slot" "header"] [H.text "Choix des paramètres"]
     ,   H.div [H.class_ "config-main"] 
         [   H.div [] [H.text "Coups possibles"]
         ,   H.div [H.class_ "sm-possiblemoves"] $
-            conf.possibleMoves # Array.mapWithIndex \i checked →
-                H.elem "sl-checkbox" [ P.checked checked
+            (1..5) <#> \i →
+                H.elem "sl-checkbox" [ P.checked (Array.elem i conf.possibleMoves)
                                      , E.on "sl-change" \ev → Just <$> SetPossibleMove i <$> slChecked ev
                                      ]
-                [   H.text $ show (i+1)
+                [   H.text (show i)
                 ]
         ,   H.div [] [H.text "Adversaire"]
         ,   H.elem "sl-select"
-                [ P.value conf.adversary
+                [ P.value (adversaryToString conf.adversary)
                 , E.on "sl-change" \ev → Just <$> SetAdversary <$> slStringValue ev
                 ]
             [   H.elem "sl-menu-item" [P.value "random"] [H.text "Aléatoire"]
@@ -118,13 +118,13 @@ configView conf status =
         ,   H.div [] [H.text "Récompense"]
         ,   H.elem "sl-input" [ P.type_ "number"
                               , P.min 1
-                              , P.value conf.reward
+                              , P.value (show conf.reward)
                               , E.on "sl-change" \ev → Just <$> SetReward <$> slStringValue ev
                               ] []
         ,   H.div [] [H.text "Pénalité"]
         ,   H.elem "sl-input" [ P.type_ "number"
                               , P.max 0
-                              , P.value conf.penalty
+                              , P.value (show conf.penalty)
                               , E.on "sl-change" \ev → Just <$> SetPenalty <$> slStringValue ev
                               ] []
         ,   H.div [] [H.text "La machine commence"]
