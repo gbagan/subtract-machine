@@ -7,10 +7,10 @@ import Effect (Effect)
 import Effect.Random (randomInt)
 
 class Monad m ⇐ Random m where
-    int ∷ Int → Int → m Int
+  int ∷ Int → Int → m Int
 
 instance Random Effect where
-    int = randomInt
+  int = randomInt
 
 pick ∷ ∀m a. Random m ⇒ Array a → m (Maybe a)
 pick [] = pure Nothing

@@ -27,25 +27,25 @@ type GameResult = { moves ∷ Array { isMachineTurn ∷ Boolean
                   , win ∷ Boolean -- est-ce une victoire pour la machine?
                   }
 type Config =
-    {   possibleMoves ∷ Array Int
-    ,   adversary ∷ Adversary
-    ,   nbPigeonholes ∷ Int
-    ,   ballsPerColor ∷ Int
-    ,   reward ∷ Int
-    ,   penalty ∷ Int
-    ,   machineStarts ∷ Boolean
-    }
+  { possibleMoves ∷ Array Int
+  , adversary ∷ Adversary
+  , nbPigeonholes ∷ Int
+  , ballsPerColor ∷ Int
+  , reward ∷ Int
+  , penalty ∷ Int
+  , machineStarts ∷ Boolean
+  }
 
 type State = 
-    {   config ∷ Config
-    ,   rawConfig ∷ Config
-    ,   nbVictories ∷ Int
-    ,   nbLosses ∷ Int
-    ,   nbBalls ∷ Array (Array Int)
-    ,   losingPositions ∷ Array Boolean
-    ,   status ∷ Status
-    ,   gameResult ∷ Maybe GameResult
-    }
+  { config ∷ Config
+  , rawConfig ∷ Config
+  , nbVictories ∷ Int
+  , nbLosses ∷ Int
+  , nbBalls ∷ Array (Array Int)
+  , losingPositions ∷ Array Boolean
+  , status ∷ Status
+  , gameResult ∷ Maybe GameResult
+  }
 
 adversaryFromString ∷ String → Adversary
 adversaryFromString "expert" = Expert
@@ -64,17 +64,18 @@ updatePossibleMoves x false moves = moves # Array.filter (_ /= x)
 -- | renvoie l'ensemble des positions perdantes pour le joueur qui va jouer
 losingPositions ∷ Int → Array Int → Array Boolean
 losingPositions size moves = force <$> t where
-    t = repeat size \i → defer
-            \_ → moves # Array.all \m → maybe true (not <<< force) (t !! (i - m))
+  t = repeat size \i → defer
+        \_ → moves # Array.all \m → maybe true (not <<< force) (t !! (i - m))
 
 -- les 4 fonctions suivantes renvoient l'index dans posssibleMoves du coup joué
 randomPlays ∷ ∀m. Random m ⇒ State → Int → m (Maybe Int)
 randomPlays st pos =
-    let nbBalls = fromMaybe [] (st.nbBalls !! (pos-1)) in
-    if Array.null nbBalls then
-        pure Nothing
-    else
-        Just <$> Random.int 0 (Array.length nbBalls - 1)
+  let nbBalls = fromMaybe [] (st.nbBalls !! (pos-1))
+  in
+  if Array.null nbBalls then
+    pure Nothing
+  else
+    Just <$> Random.int 0 (Array.length nbBalls - 1)
 
 expertPlays ∷ ∀m. Random m ⇒ State → Int → m (Maybe Int)
 expertPlays st pos
@@ -153,22 +154,22 @@ initMachine st =
 
 state ∷ State
 state = initMachine
-    {   config
-    ,   rawConfig: config
-    ,   nbVictories: 0
-    ,   nbLosses: 0
-    ,   nbBalls: []
-    ,   losingPositions: []
-    ,   status: Stopped
-    ,   gameResult: Nothing
-    }
-    where
-    config =
-        {   possibleMoves: [1, 2]
-        ,   adversary: Random
-        ,   nbPigeonholes: 8
-        ,   ballsPerColor: 6
-        ,   reward: 3
-        ,   penalty: -1
-        ,   machineStarts: true
+  { config
+  , rawConfig: config
+  , nbVictories: 0
+  , nbLosses: 0
+  , nbBalls: []
+  , losingPositions: []
+  , status: Stopped
+  , gameResult: Nothing
+  }
+  where
+  config =
+        { possibleMoves: [1, 2]
+        , adversary: Random
+        , nbPigeonholes: 8
+        , ballsPerColor: 6
+        , reward: 3
+        , penalty: -1
+        , machineStarts: true
         }

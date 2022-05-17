@@ -9,10 +9,12 @@ import SM.Model (state)
 import SM.Update (update)
 
 main ∷ Effect Unit
-main = app
-    {   init: {state, action: Nothing}
-    ,   view
-    ,   update
-    ,   subscriptions: []
-    ,   selector: "#root"
+main =
+  app
+    { init: { state, action: Nothing }
+    , view
+    , update
+    , eval: identity
+    , subscriptions: []
+    , selector: "#root"
     }

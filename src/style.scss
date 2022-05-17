@@ -11,13 +11,13 @@
 .config-main {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 1em;
+    gap: 1em;
 }
 
 .sm-machine-main {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    grid-gap: 1em;
+    gap: 1em;
 }
 
 .sm-pigeonhole-svg {
