@@ -4,6 +4,19 @@ let upstream =
 
 let overrides = {=}
 
-let additions = {=}
+let additions =
+      { pha =
+        { dependencies =
+          [ "aff"
+          , "effect"
+          , "free"
+          , "web-uievents"
+          , "unsafe-reference"
+          , "web-pointerevents"
+          ]
+        , repo = "https://github.com/gbagan/purescript-pha.git"
+        , version = "master"
+        }
+      }
 
 in  upstream // overrides // additions

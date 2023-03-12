@@ -8,7 +8,7 @@ data Msg
   | SetAdversary String
   | SetReward String
   | SetPenalty String
-  | SetBallsPerColor Int
-  | SetNbPigeonholes Int
-  | SetPossibleMove Int Boolean
+  | SetBallsPerColor String
+  | SetNbPigeonholes String
+  | TogglePossibleMove Int
   | SetMachineStarts String

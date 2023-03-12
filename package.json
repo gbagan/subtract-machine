@@ -1,15 +1,13 @@
 {
   "dependencies": {
-    "@shoelace-style/shoelace": "^2.0.0-beta.73",
-    "esbuild": "^0.14.38",
-    "purescript": "^0.15.0",
-    "sass": "^1.51.0",
-    "spago": "^0.20.9"
+    "esbuild": "^0.17.6",
+    "purescript": "^0.15.7",
+    "spago": "^0.20.9",
+    "tailwindcss": "^3.2.6"
   },
   "scripts": {
     "build": "spago bundle-app --minify --to dist/bundle.js",
-    "buildcss": "sass src/style.scss dist/bundle.css",
-    "build-shoelace": "esbuild --bundle shoelace/index.js --minify --outfile=dist/shoelace.js",
+    "buildcss": "tailwindcss -i src/tailwind.css -o dist/tailwind.css",
     "deploy:test": "scp -r dist/* gbagan@connect.liris.cnrs.fr:~/machine/",
     "deploy": "scp -r dist/* mam@connect.liris.cnrs.fr:~/public_html/machine/"
   }

@@ -4,23 +4,28 @@ import Prelude
 import Data.Array ((!!), (..))
 import Data.Array as Array
 import Data.Int as Int
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (fromMaybe, maybe)
 import Data.Number (floor, sin)
-import Effect (Effect)
 import Pha.Html (Html)
 import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
-import Web.Event.Event (Event)
+import Pha.Html.Util (pc)
 import SM.Model (Config, State, Status(..), GameResult, adversaryToString)
 import SM.Msg (Msg(..))
 import SM.Util (map2)
 
-foreign import slIntValue ∷ Event → Effect Int
+buttonClass :: String
+buttonClass = "py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
 
-foreign import slStringValue ∷ Event → Effect String
+checkboxClass :: String
+checkboxClass = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
 
-foreign import slChecked ∷ Event → Effect Boolean
+selectClass :: String
+selectClass = "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+
+inputNumberClass :: String
+inputNumberClass = "block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
 
 colors ∷ Array String
 colors = [ "yellow", "red", "cyan", "lightgreen", "magenta" ]
@@ -32,8 +37,8 @@ pseudoRandom n = m - floor m
 
 drawPigeonhole ∷ forall a. Int → Array Int → Html a
 drawPigeonhole i nbBalls =
-  H.div [ H.class_ "sm-pigeonhole" ]
-    [ H.svg [ P.viewBox 0 0 100 150, H.class_ "sm-pigeonhole-svg" ]
+  H.div []
+    [ H.svg [ P.viewBox 0 0 100 150, H.class_ "block w-32 h-48" ]
         [ H.path [ P.d "M1 1 L10 149 L90 149 L99 1", P.strokeWidth 3.0, P.stroke "#000", P.fill "transparent" ]
         , H.g []
             ( let
@@ -51,10 +56,10 @@ drawPigeonhole i nbBalls =
                         ]
             )
         ]
-    , H.div [ H.class_ "sm-pigeonhole-no" ] [ H.text $ show (i + 1) ]
-    , H.div [ H.class_ "ball-counter-group" ]
+    , H.div [ H.class_ "block font-bold" ] [ H.text $ show (i + 1) ]
+    , H.div [ H.class_ "flex flex-row" ]
         $ map2 nbBalls colors \n color →
-            H.div [ H.class_ "ball-counter", H.style "background-color" color ]
+            H.div [ H.class_ "h-6 w-8", H.style "background-color" color ]
               [ H.text $ show n
               ]
     ]
@@ -72,108 +77,114 @@ showResult { moves, win } =
 
 scoreView ∷ forall a. Int → Int → Html a
 scoreView nbVictories nbLosses =
-  H.div [ H.class_ "sm-score" ]
-    [ H.span [ H.class_ "sm-victory" ] [ H.text $ "Victoires: " <> show nbVictories ]
-    , H.elem "sl-progress-bar"
-        [ H.class_ "sm-score-progress"
-        , P.value $ show
-            $ let
+  H.div [ H.class_ "flex flex-row justify-between mt-4 mb-2" ]
+    [ H.span [ H.class_ "text-blue-600 font-bold" ] [ H.text $ "Victoires: " <> show nbVictories ]
+    , H.div [H.class_ "w-full bg-red-600 rounded-full h-6"]
+        [ H.div
+          [ H.class_ "h-6 bg-blue-600 rounded-l-full"
+          , H.style "width" $ pc $
+              let
                 n = nbVictories + nbLosses
               in
                 if n == 0 then
-                  50.0
+                  0.5
                 else
-                  100.0 * Int.toNumber nbVictories / Int.toNumber n
+                  Int.toNumber nbVictories / Int.toNumber n
+          ] []
         ]
-        []
-    , H.span [ H.class_ "sm-loss" ] [ H.text $ "Défaites: " <> show nbLosses ]
+    , H.span [ H.class_ "text-red-600 font-bold" ] [ H.text $ "Défaites: " <> show nbLosses ]
     ]
 
 machineView ∷ forall a. Array (Array Int) → Html a
 machineView nbBalls =
-  H.div [ H.class_ "sm-machine-main" ]
+  H.div [ H.class_ "grid grid-cols-8 gap-4" ]
     $ nbBalls
     # Array.mapWithIndex drawPigeonhole
 
 configView ∷ Config → Status → Html Msg
 configView conf status =
-  H.elem "sl-card" []
-    [ H.div [ H.attr "slot" "header" ] [ H.text "Choix des paramètres" ]
-    , H.div [ H.class_ "config-main" ]
+  H.div [ H.class_ "max-w rounded overflow-hidden shadow-lg p-4" ]
+    [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text "Choix des paramètres" ]
+    , H.div [ H.class_ "grid grid-cols-2 gap-4" ]
         [ H.div [] [ H.text "Coups possibles" ]
-        , H.div [ H.class_ "sm-possiblemoves" ]
+        , H.div [ H.class_ "flex flex-row justify-between" ]
             $ (1 .. 5)
             <#> \i →
-                H.elem "sl-checkbox"
-                  [ P.checked (Array.elem i conf.possibleMoves)
-                  , E.on "sl-change" \ev → Just <$> SetPossibleMove i <$> slChecked ev
-                  ]
-                  [ H.text (show i)
-                  ]
+              H.label []
+              [ H.input
+                [ P.type_ "checkbox"
+                , P.checked (Array.elem i conf.possibleMoves)
+                , H.class_ checkboxClass
+                , E.onChecked \_ -> TogglePossibleMove i
+                ]
+              , H.span [H.class_ "ml-2 text-sm font-medium text-gray-900"] [H.text $ show i]
+              ]
         , H.div [] [ H.text "Adversaire" ]
-        , H.elem "sl-select"
-            [ P.value (adversaryToString conf.adversary)
-            , E.on "sl-change" \ev → Just <$> SetAdversary <$> slStringValue ev
+        , H.elem "select"
+            [ H.class_ selectClass
+            , P.value (adversaryToString conf.adversary)
+            , E.onValueChange SetAdversary
             ]
-            [ H.elem "sl-menu-item" [ P.value "random" ] [ H.text "Aléatoire" ]
-            , H.elem "sl-menu-item" [ P.value "expert" ] [ H.text "Expert" ]
-            , H.elem "sl-menu-item" [ P.value "machine" ] [ H.text "Machine" ]
+            [ H.elem "option" [ P.value "random" ] [ H.text "Aléatoire" ]
+            , H.elem "option" [ P.value "expert" ] [ H.text "Expert" ]
+            , H.elem "option" [ P.value "machine" ] [ H.text "Machine" ]
             ]
         , H.div [] [ H.text "Nombre de casiers" ]
-        , H.elem "sl-range"
-            [ P.min 8
-            , P.max 16
+        , H.elem "select"
+            [ H.class_ selectClass
             , P.value $ show conf.nbPigeonholes
-            , E.on "sl-change" \ev → Just <$> SetNbPigeonholes <$> slIntValue ev
-            ]
-            []
+            , E.onValueChange SetNbPigeonholes
+            ] $ (8..16) <#> \i ->
+                  H.elem "option" [ P.value (show i)] [H.text (show i)]
         , H.div [] [ H.text "Billes par couleur" ]
-        , H.elem "sl-range"
-            [ P.min 2
+        , H.input
+            [ P.type_ "number"
+            , H.class_ inputNumberClass
+            , P.min 2
             , P.max 10
             , P.value $ show conf.ballsPerColor
-            , E.on "sl-change" \ev → Just <$> SetBallsPerColor <$> slIntValue ev
+            , E.onValueChange SetBallsPerColor
             ]
-            []
         , H.div [] [ H.text "Récompense" ]
-        , H.elem "sl-input"
+        , H.input
             [ P.type_ "number"
+            , H.class_ inputNumberClass
             , P.min 1
             , P.value (show conf.reward)
-            , E.on "sl-change" \ev → Just <$> SetReward <$> slStringValue ev
+            , E.onValueChange SetReward
             ]
-            []
         , H.div [] [ H.text "Pénalité" ]
-        , H.elem "sl-input"
+        , H.input
             [ P.type_ "number"
+            , H.class_ inputNumberClass
             , P.max 0
             , P.value (show conf.penalty)
-            , E.on "sl-change" \ev → Just <$> SetPenalty <$> slStringValue ev
+            , E.onValueChange SetPenalty
             ]
-            []
         , H.div [] [ H.text "La machine commence" ]
-        , H.elem "sl-select"
-            [ P.value (if conf.machineStarts then "y" else "n")
-            , E.on "sl-change" \ev → Just <$> SetMachineStarts <$> slStringValue ev
+        , H.elem "select"
+            [ H.class_ selectClass
+            , P.value (if conf.machineStarts then "y" else "n")
+            , E.onValueChange SetMachineStarts
             ]
-            [ H.elem "sl-menu-item" [ P.value "y" ] [ H.text "Oui" ]
-            , H.elem "sl-menu-item" [ P.value "n" ] [ H.text "Non" ]
+            [ H.elem "option" [ P.value "y" ] [ H.text "Oui" ]
+            , H.elem "option" [ P.value "n" ] [ H.text "Non" ]
             ]
-        , H.elem "sl-button" [ E.onClick \_ → InitMachine ] [ H.text "Préparer la machine" ]
+        , H.button [ H.class_ buttonClass, E.onClick \_ → InitMachine ] [ H.text "Préparer la machine" ]
         , if status == Stopped then
-            H.elem "sl-button" [ E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
+            H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
           else
-            H.elem "sl-button" [ E.onClick \_ → StopMachine ] [ H.text "Arrêter la machine" ]
-        , H.elem "sl-button" [ E.onClick \_ → NextGame ] [ H.text "Pas à pas" ]
+            H.button [ H.class_ buttonClass, E.onClick \_ → StopMachine ] [ H.text "Arrêter la machine" ]
+        , H.button [ H.class_ buttonClass, E.onClick \_ → NextGame ] [ H.text "Pas à pas" ]
         ]
     ]
 
 view ∷ State → Html Msg
 view state =
-  H.div [ H.class_ "sm-main" ]
-    [ H.elem "sl-card" []
-        [ H.div [ H.attr "slot" "header" ] [ H.text "Visualisation de la machine" ]
-        , H.div [ H.class_ "sm-main-machine" ]
+  H.div [ H.class_ "flex flex-row" ]
+    [ H.div [H.class_ "max-w rounded overflow-hidden shadow-lg p-4 mr-4"]
+        [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text "Visualisation de la machine" ]
+        , H.div [ H.class_ "flex flex-col" ]
             [ machineView state.nbBalls
             , scoreView state.nbVictories state.nbLosses
             , H.div [] $ maybe [] showResult state.gameResult

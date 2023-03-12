@@ -57,9 +57,9 @@ adversaryToString Expert = "expert"
 adversaryToString Machine = "machine"
 adversaryToString Random = "random"
 
-updatePossibleMoves ∷ Int → Boolean → Array Int → Array Int
-updatePossibleMoves x true moves = moves # Array.cons x # Array.sort
-updatePossibleMoves x false moves = moves # Array.filter (_ /= x)
+updatePossibleMoves ∷ Int → Array Int → Array Int
+updatePossibleMoves x moves | Array.elem x moves = moves # Array.filter (_ /= x)
+                            | otherwise = moves # Array.cons x # Array.sort
 
 -- | renvoie l'ensemble des positions perdantes pour le joueur qui va jouer
 losingPositions ∷ Int → Array Int → Array Boolean

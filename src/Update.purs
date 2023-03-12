@@ -48,12 +48,12 @@ update (SetReward n) = _rawConfig %= _ { reward = fromMaybe 3 (Int.fromString n)
 
 update (SetPenalty n) = _rawConfig %= _ { penalty = fromMaybe (-1) (Int.fromString n) }
 
-update (SetPossibleMove i b) = _rawConfig <<< _possibleMoves %= updatePossibleMoves i b
+update (TogglePossibleMove i) = _rawConfig <<< _possibleMoves %= updatePossibleMoves i
 
 update (SetAdversary val) = _rawConfig %= _ { adversary = adversaryFromString val }
 
-update (SetNbPigeonholes n) = _rawConfig %= _ { nbPigeonholes = n }
+update (SetNbPigeonholes n) = _rawConfig %= _ { nbPigeonholes = fromMaybe 8 (Int.fromString n) }
 
-update (SetBallsPerColor n) = _rawConfig %= _ { ballsPerColor = n }
+update (SetBallsPerColor n) = _rawConfig %= _ { ballsPerColor = fromMaybe 6 (Int.fromString n) }
 
 update (SetMachineStarts val) = _rawConfig %= _ { machineStarts = val == "y" }
