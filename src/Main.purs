@@ -1,20 +1,25 @@
 module Main (main) where
 
 import Prelude
+
+import Control.Monad.Reader.Trans (runReaderT)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Ref as Ref
 import Pha.App (app)
+import Pha.Update (hoist)
+import Random.LCG (randomSeed)
 import SM.View (view)
-import SM.Model (state)
+import SM.Model (init)
 import SM.Update (update)
 
 main ∷ Effect Unit
-main =
+main = do
+  newSeed <- randomSeed
+  genModel <- Ref.new {newSeed, size: 0}
   app
-    { init: { state, action: Nothing }
+    { init: { model: init, msg: Nothing }
     , view
-    , update
-    , eval: identity
-    , subscriptions: []
+    , update: hoist (flip runReaderT {genModel}) <<< update
     , selector: "#root"
     }
