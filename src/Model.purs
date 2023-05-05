@@ -45,7 +45,6 @@ type Config =
 
 type Model =
   { config ∷ Config
-  , rawConfig ∷ Config
   , source ∷ Int
   , nbVictories ∷ Int
   , nbLosses ∷ Int
@@ -153,7 +152,6 @@ initMachine model =
 init ∷ Model
 init = initMachine
   { config
-  , rawConfig: config
   , source: 0
   , nbVictories: 0
   , nbLosses: 0

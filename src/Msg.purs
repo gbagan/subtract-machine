@@ -1,8 +1,7 @@
 module SM.Msg where
 
 data Msg
-  = InitMachine
-  | NextGame
+  = NextGame
   | RunMachine
   | StopMachine
   | SetGraphType String

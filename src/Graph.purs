@@ -78,14 +78,14 @@ kingGraph' width height =
 
 kingDisplayer ∷ Int → Int → GraphDisplayer Int Int
 kingDisplayer width height = 
-  { width: 200 * maxdim
-  , height: 200 * maxdim
+  { width: 180 * maxdim
+  , height: 180 * maxdim
   , position: \v →
       if v == 0
       then Nothing
       else Just 
-            { x: 50.0 + 200.0 * toNumber (v `mod` width)
-            , y: 10.0 + 200.0 * toNumber (height - v `div` width - 1)
+            { x: 50.0 + 180.0 * toNumber (v `mod` width)
+            , y: 10.0 + 180.0 * toNumber (height - v `div` width - 1)
             }
   , edgeNames: [{ edge: 0, name: "" }]
   }

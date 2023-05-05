@@ -108,7 +108,7 @@ scoreView nbVictories nbLosses =
 
 machineView ∷ forall a. GraphDisplayer Int Int → GraphWithBalls Int Int → Html a
 machineView displayer graphWithBalls =
-  H.div [ H.class_ "w-[50vw]" ]
+  H.div [ H.class_ "w-[40vw]" ]
   -- [ H.class_ "grid grid-cols-8 gap-4" ]
     [ H.svg [P.viewBox 0 0 displayer.width displayer.height ]
       $ graphWithBalls
@@ -217,7 +217,6 @@ configView conf status =
             [ H.option [ P.value "y" ] [ H.text "Oui" ]
             , H.option [ P.value "n" ] [ H.text "Non" ]
             ]
-        , H.button [ H.class_ buttonClass, E.onClick \_ → InitMachine ] [ H.text "Préparer la machine" ]
         , if status == Stopped then
             H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
           else
@@ -237,7 +236,7 @@ view model =
             , H.div [] $ maybe [] showResult model.gameResult
             ]
         ]
-    , configView model.rawConfig model.status
+    , configView model.config model.status
     ]
   where
   displayer = case model.config.graphType of

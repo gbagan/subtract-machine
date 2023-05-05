@@ -6,7 +6,7 @@ import Control.Monad.Gen.Trans (Gen, GenState, runGen)
 import Control.Monad.Reader.Class (ask)
 import Control.Monad.Reader.Trans (ReaderT)
 import Data.Int as Int
-import Data.Lens (Lens', (%=))
+import Data.Lens (Lens', (%~))
 import Data.Lens.Record (prop)
 import Data.Maybe (fromMaybe)
 import Data.Time.Duration (Milliseconds(..))
@@ -35,15 +35,16 @@ evalGen g = do
 
 
 -- lenses
-_rawConfig ∷ Lens' Model Config
-_rawConfig = prop (Proxy ∷ _ "rawConfig")
+_config ∷ Lens' Model Config
+_config = prop (Proxy ∷ _ "config")
 
 _graphType ∷ Lens' Config GraphType
 _graphType = prop (Proxy ∷ _ "graphType")
 
-update ∷ Msg → Update' Model Msg Unit
-update InitMachine = modify_ \st → initMachine st { config = st.rawConfig }
+changeConfig :: (Config -> Config) -> Update' Model Msg Unit
+changeConfig f = modify_ $ initMachine <<< (_config %~ f)
 
+update ∷ Msg → Update' Model Msg Unit
 update RunMachine = do
   modify_ _ { status = Running }
   tailRecM go unit
@@ -64,36 +65,36 @@ update NextGame = do
   st ← get
   put =<< evalGen (nextGame st)
 
-update (SetGraphType val) = _rawConfig %= _{ graphType =
+update (SetGraphType val) = changeConfig _{ graphType =
                               if val == "sub" then Substract 8 [1, 2] else King 3 3
                           }
 
-update (SetNbPigeonholes n) = _rawConfig <<< _graphType %= 
+update (SetNbPigeonholes n) = changeConfig $ _graphType %~
   case _ of
     Substract _ moves → Substract (fromMaybe 8 (Int.fromString n)) moves
     x → x
 
-update (TogglePossibleMove i) = _rawConfig <<< _graphType %=
+update (TogglePossibleMove i) = changeConfig $ _graphType %~
   case _ of
     Substract n moves → Substract n (updatePossibleMoves i moves)
     x → x
 
-update (SetKingWidth n) = _rawConfig <<< _graphType %= 
+update (SetKingWidth n) = changeConfig $ _graphType %~
   case _ of
     King _ h → King (fromMaybe 3 (Int.fromString n)) h
     x → x
 
-update (SetKingHeight m) = _rawConfig <<< _graphType %= 
+update (SetKingHeight m) = changeConfig$ _graphType %~
   case _ of
     King w _  → King w (fromMaybe 3 (Int.fromString m))
     x → x
 
-update (SetReward n) = _rawConfig %= _{ reward = fromMaybe 3 (Int.fromString n) }
+update (SetReward n) = changeConfig _{ reward = fromMaybe 3 (Int.fromString n) }
 
-update (SetPenalty n) = _rawConfig %= _{ penalty = fromMaybe (-1) (Int.fromString n) }
+update (SetPenalty n) = changeConfig _{ penalty = fromMaybe (-1) (Int.fromString n) }
 
-update (SetAdversary val) = _rawConfig %= _ { adversary = adversaryFromString val }
+update (SetAdversary val) = changeConfig _ { adversary = adversaryFromString val }
 
-update (SetBallsPerColor n) = _rawConfig %= _ { ballsPerColor = fromMaybe 6 (Int.fromString n) }
+update (SetBallsPerColor n) = changeConfig _ { ballsPerColor = fromMaybe 6 (Int.fromString n) }
 
-update (SetMachineStarts val) = _rawConfig %= _ { machineStarts = val == "y" }
+update (SetMachineStarts val) = changeConfig _ { machineStarts = val == "y" }
