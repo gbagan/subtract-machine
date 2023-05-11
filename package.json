@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "spago bundle-app --minify --to dist/bundle.js",
+    "buildopt": "spago -x opt.dhall build && purs-backend-es bundle-app --no-build --minify --to dist/bundle.js",
     "buildcss": "tailwindcss -i src/tailwind.css -o dist/tailwind.css",
     "deploy:test": "scp -r dist/* gbagan@connect.liris.cnrs.fr:~/machine/",
     "deploy": "scp -r dist/* mam@connect.liris.cnrs.fr:~/public_html/machine/"
