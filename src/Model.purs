@@ -111,7 +111,7 @@ adjustBalls model { moves, win } =
             else
               model.config.penalty
           )
-      )
+      ) 
 
   graphWithBalls = moves
     # foldr

@@ -5,6 +5,7 @@
   , "control"
   , "datetime"
   , "effect"
+  , "foldable-traversable"
   , "generate-values"
   , "integers"
   , "lazy"

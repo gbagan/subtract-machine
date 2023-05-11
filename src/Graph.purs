@@ -20,7 +20,7 @@ type GraphDisplayer v e =
   { width ∷ Int
   , height ∷ Int
   , position ∷ v → Maybe { x ∷ Number, y ∷ Number }
-  , edgeNames ∷ Array { edge ∷ e, name ∷ String }
+  , legend ∷ Array { edge ∷ e, name ∷ String }
   }
 
 
@@ -45,7 +45,7 @@ substractGraph n moves = Graph (Map.fromFoldable $ 0 .. n <#> \i -> i /\ nbors i
     nbors i = do
       j <- moves
       guard (i - j >= 0)
-      pure { edge: j, dest: i - j }
+      pure { edge: j-1, dest: i - j }
 
 substractDisplayer ∷ Array Int → GraphDisplayer Int Int
 substractDisplayer moves =
@@ -55,7 +55,7 @@ substractDisplayer moves =
       if v == 0      then Nothing
       else if v <= 8 then Just { x: toNumber (v-1) * 100.0, y: 0.0 }
       else                Just { x: toNumber (v-9) * 100.0, y: 200.0 }
-  , edgeNames: moves <#> \e → { edge: e, name: show e }
+  , legend: moves <#> \e → { edge: e-1, name: show e }
   }
 
 kingGraph ∷ Int → Int → Graph (Tuple Int Int) Int
@@ -87,7 +87,7 @@ kingDisplayer width height =
             { x: 50.0 + 180.0 * toNumber (v `mod` width)
             , y: 10.0 + 180.0 * toNumber (height - v `div` width - 1)
             }
-  , edgeNames: [{ edge: 0, name: "" }]
+  , legend: [{edge: 0, name: "⇐"}, { edge: 1, name: "⇙" }, {edge: 2, name: "⇓"}]
   }
   where
   maxdim = max width height
