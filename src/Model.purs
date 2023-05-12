@@ -32,6 +32,16 @@ data Status = Running | IsStopping | Stopped
 
 derive instance Eq Status
 
+
+baseColors ∷ Array String
+baseColors =
+  [ "#f6b73c"  -- yellow
+  , "#ff0000" --red
+  , "#00ffff" --cyan"
+  , "90ee90" -- light green 
+  , "ff0090"  --magenta" 
+  ]
+
 type GameResult =
   { moves ∷
       Array
@@ -65,6 +75,8 @@ type Model =
   , status ∷ Status
   , gameResult ∷ Maybe GameResult
   , displayer :: GraphDisplayer Int Int
+  , colors :: Array String
+  , fastMode :: Boolean 
   }
 
 adversaryFromString ∷ String → Adversary
@@ -176,6 +188,8 @@ init = initMachine
   , status: Stopped
   , gameResult: Nothing
   , displayer: defaultDisplayer
+  , colors: baseColors
+  , fastMode: false
   }
   where
   config =

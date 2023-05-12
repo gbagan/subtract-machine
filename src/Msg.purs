@@ -14,3 +14,5 @@ data Msg
   | SetPenalty String
   | SetBallsPerColor String
   | SetMachineStarts String
+  | ColorChange Int String
+  | SetFastMode Boolean

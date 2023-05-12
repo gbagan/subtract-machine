@@ -6,7 +6,8 @@ import Control.Monad.Gen.Trans (Gen, GenState, runGen)
 import Control.Monad.Reader.Class (ask)
 import Control.Monad.Reader.Trans (ReaderT)
 import Data.Int as Int
-import Data.Lens (Lens', (%~))
+import Data.Lens (Lens', (%~), (.=))
+import Data.Lens.Index (ix)
 import Data.Lens.Record (prop)
 import Data.Maybe (fromMaybe)
 import Data.Tuple.Nested ((/\))
@@ -40,6 +41,9 @@ _config = prop (Proxy ∷ _ "config")
 _graphType ∷ Lens' Config GraphType
 _graphType = prop (Proxy ∷ _ "graphType")
 
+_colors ∷ Lens' Model (Array String)
+_colors = prop (Proxy ∷ _ "colors")
+
 changeConfig :: (Config -> Config) -> Update' Model Msg Unit
 changeConfig f = modify_ $ initMachine <<< (_config %~ f)
 
@@ -55,7 +59,7 @@ update RunMachine = do
       pure $ Done unit
     else do
       update NextGame
-      delay (Milliseconds 500.0)
+      delay (Milliseconds $ if st.fastMode then 100.0 else 500.0)
       pure $ Loop unit
 
 update StopMachine = modify_ _ { status = IsStopping }
@@ -97,3 +101,7 @@ update (SetAdversary val) = changeConfig _ { adversary = adversaryFromString val
 update (SetBallsPerColor n) = changeConfig _ { ballsPerColor = fromMaybe 6 (Int.fromString n) }
 
 update (SetMachineStarts val) = changeConfig _ { machineStarts = val == "y" }
+
+update (ColorChange i val) = _colors <<< ix i .= val
+
+update (SetFastMode b) = modify_ _{fastMode = b}

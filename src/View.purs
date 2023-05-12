@@ -14,10 +14,10 @@ import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
-import SM.Util (pseudoRandom, pseudoShuffle)
 import SM.Graph (GraphDisplayer, GraphWithBalls, Legend)
 import SM.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
 import SM.Msg (Msg(..))
+import SM.Util (pseudoRandom, pseudoShuffle)
 
 buttonClass :: String
 buttonClass = "py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
@@ -39,17 +39,14 @@ card title body =
   H.div [ H.class_ cardClass ] $
     [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text title ] ] <> body
   
-
-colors ∷ Array String
-colors = [ "yellow", "red", "cyan", "lightgreen", "magenta" ]
-
 drawPigeonhole
   ∷ forall a
    . GraphDisplayer Int Int
+  → Array String
   → Int
   → Array { edge :: Int, dest :: Int, nbBalls :: Int }
   → Html a
-drawPigeonhole displayer i balls =
+drawPigeonhole displayer colors i balls =
   H.maybe (displayer.position i) \{ x, y } →
     H.g [ H.style "transform" $ translate (px x) (px y) ]   
       [ H.path [ P.d "M1 1 L10 109 L90 109 L99 1", P.strokeWidth 3.0, P.stroke "#000", P.fill "transparent" ]
@@ -111,21 +108,26 @@ scoreView nbVictories nbLosses =
     , H.span [ H.class_ "text-red-600 font-bold" ] [ H.text $ "Défaites: " <> show nbLosses ]
     ]
 
-machineView ∷ forall a. GraphDisplayer Int Int → GraphWithBalls Int Int → Html a
-machineView displayer graphWithBalls =
+machineView ∷ forall a. GraphDisplayer Int Int → Array String → GraphWithBalls Int Int → Html a
+machineView displayer colors graphWithBalls =
   H.div [ H.class_ "w-[42vw]" ]
     [ H.svg [ P.viewBox 0 0 displayer.width displayer.height ]
         $ graphWithBalls
             # Map.toUnfoldable
-            <#> uncurry (drawPigeonhole displayer)
+            <#> uncurry (drawPigeonhole displayer colors)
     ]
 
-legendView ∷ forall a. Legend Int → Html a
-legendView legend =
+legendView ∷ Legend Int → Array String → Html Msg
+legendView legend colors =
   card "Légende"
     [ H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
         legend >>= \{ edge, name } ->
-          [ H.div [ H.class_ "inline w-12 h-12", H.style "background-color" $ fromMaybe "black" $ colors !! edge ] []
+          [ H.input
+            [ P.type_ "color"
+            , H.class_ "inline w-12 h-12"
+            , P.value $ fromMaybe "black" $ colors !! edge
+            , E.onValueChange (ColorChange edge)
+            ]
           , H.span [ H.class_ "text-2xl" ] [ H.text $ " : " <> name ]
           ]
     ]
@@ -236,7 +238,12 @@ configView conf status =
                 H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
               else
                 H.button [ H.class_ buttonClass, E.onClick \_ → StopMachine ] [ H.text "Arrêter la machine" ]
-            , H.button [ H.class_ buttonClass, E.onClick \_ → NextGame ] [ H.text "Pas à pas" ]
+            , H.button 
+              [ H.class_ buttonClass
+              , E.onPointerDown \_ → SetFastMode true
+              , E.onPointerUp \_ → SetFastMode false
+              , E.onPointerLeave \_ → SetFastMode false
+              ] [ H.text "Accélerer" ]
             ]
     ]
 
@@ -245,10 +252,10 @@ view model =
   H.div [ H.class_ "w-screen flex flex-row justify-around items-start" ]
     [ card "Visualisation de la machine"
         [ H.div [ H.class_ "flex flex-col" ]
-            [ machineView model.displayer model.graphWithBalls
+            [ machineView model.displayer model.colors model.graphWithBalls
             , scoreView model.nbVictories model.nbLosses
             ]
         ]
-    , H.lazy legendView model.displayer.legend
+    , H.lazy2 legendView model.displayer.legend model.colors
     , H.lazy2 configView model.config model.status
     ]
