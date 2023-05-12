@@ -48,6 +48,14 @@ substractGraph n moves = Graph (Map.fromFoldable $ 0 .. n <#> \i -> i /\ nbors i
       guard (i - j >= 0)
       pure { edge: j-1, dest: i - j }
 
+defaultDisplayer ∷ forall v e. GraphDisplayer v e
+defaultDisplayer =
+  { width: 0
+  , height: 0
+  , position: const Nothing
+  , legend: []
+  }
+
 substractDisplayer ∷ Array Int → GraphDisplayer Int Int
 substractDisplayer moves =
   { width: 800

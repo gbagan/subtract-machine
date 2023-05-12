@@ -8,9 +8,21 @@ import Data.Array (all, cons, elem, filter, foldr, snoc, sort)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import SM.Graph ( GraphWithBalls, source, addBallsToGraph, expertPlays, losingPositions, machinePlays, randomPlays
-                , substractGraph, kingGraph'
-                )
+import SM.Graph
+  ( GraphDisplayer
+  , GraphWithBalls
+  , addBallsToGraph
+  , defaultDisplayer
+  , expertPlays
+  , kingDisplayer
+  , kingGraph'
+  , losingPositions
+  , machinePlays
+  , randomPlays
+  , source
+  , substractDisplayer
+  , substractGraph
+  )
 
 data Adversary = Random | Expert | Machine
 
@@ -52,6 +64,7 @@ type Model =
   , losingPositions ∷ Map Int Boolean
   , status ∷ Status
   , gameResult ∷ Maybe GameResult
+  , displayer :: GraphDisplayer Int Int
   }
 
 adversaryFromString ∷ String → Adversary
@@ -111,7 +124,7 @@ adjustBalls model { moves, win } =
             else
               model.config.penalty
           )
-      ) 
+      )
 
   graphWithBalls = moves
     # foldr
@@ -132,22 +145,25 @@ nextGame st = runGame st <#> adjustBalls st
 
 initMachine ∷ Model → Model
 initMachine model =
-  let
-    graph = case model.config.graphType of
-      Substract nb possibleMoves → substractGraph nb possibleMoves
-      King n m → kingGraph' n m
-    graphWithBalls = addBallsToGraph model.config.ballsPerColor graph
-    losing = losingPositions graph
-  in
-    model
-      { graphWithBalls = graphWithBalls
-      , source = source graph
-      , nbVictories = 0
-      , nbLosses = 0
-      , losingPositions = losing
-      , status = Stopped
-      , gameResult = Nothing
-      }
+  model
+    { graphWithBalls = graphWithBalls
+    , source = source graph
+    , nbVictories = 0
+    , nbLosses = 0
+    , losingPositions = losing
+    , status = Stopped
+    , gameResult = Nothing
+    , displayer = displayer
+    }
+  where
+  graph = case model.config.graphType of
+    Substract nb possibleMoves → substractGraph nb possibleMoves
+    King n m → kingGraph' n m
+  graphWithBalls = addBallsToGraph model.config.ballsPerColor graph
+  losing = losingPositions graph
+  displayer = case model.config.graphType of
+    Substract _ moves -> substractDisplayer moves
+    King n m -> kingDisplayer n m
 
 init ∷ Model
 init = initMachine
@@ -159,6 +175,7 @@ init = initMachine
   , losingPositions: Map.empty
   , status: Stopped
   , gameResult: Nothing
+  , displayer: defaultDisplayer
   }
   where
   config =

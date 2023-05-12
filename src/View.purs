@@ -15,7 +15,7 @@ import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
 import SM.Util (pseudoRandom, pseudoShuffle)
-import SM.Graph (GraphDisplayer, GraphWithBalls, Legend, kingDisplayer, substractDisplayer)
+import SM.Graph (GraphDisplayer, GraphWithBalls, Legend)
 import SM.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
 import SM.Msg (Msg(..))
 
@@ -245,14 +245,10 @@ view model =
   H.div [ H.class_ "w-screen flex flex-row justify-around items-start" ]
     [ card "Visualisation de la machine"
         [ H.div [ H.class_ "flex flex-col" ]
-            [ machineView displayer model.graphWithBalls
+            [ machineView model.displayer model.graphWithBalls
             , scoreView model.nbVictories model.nbLosses
             ]
         ]
-    , legendView displayer.legend
-    , configView model.config model.status
+    , H.lazy legendView model.displayer.legend
+    , H.lazy2 configView model.config model.status
     ]
-  where
-  displayer = case model.config.graphType of
-    Substract _ moves -> substractDisplayer moves
-    King n m -> kingDisplayer n m
