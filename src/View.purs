@@ -15,7 +15,7 @@ import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
 import SM.Util (pseudoRandom, pseudoShuffle)
-import SM.Graph (GraphDisplayer, GraphWithBalls, kingDisplayer, substractDisplayer)
+import SM.Graph (GraphDisplayer, GraphWithBalls, Legend, kingDisplayer, substractDisplayer)
 import SM.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
 import SM.Msg (Msg(..))
 
@@ -30,6 +30,15 @@ selectClass = "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l
 
 inputNumberClass :: String
 inputNumberClass = "block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+
+cardClass :: String
+cardClass = "rounded overflow-hidden shadow-lg p-4"
+
+card :: forall a. String → Array (Html a) → Html a
+card title body =
+  H.div [ H.class_ cardClass ] $
+    [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text title ] ] <> body
+  
 
 colors ∷ Array String
 colors = [ "yellow", "red", "cyan", "lightgreen", "magenta" ]
@@ -105,18 +114,16 @@ scoreView nbVictories nbLosses =
 machineView ∷ forall a. GraphDisplayer Int Int → GraphWithBalls Int Int → Html a
 machineView displayer graphWithBalls =
   H.div [ H.class_ "w-[42vw]" ]
-    -- [ H.class_ "grid grid-cols-8 gap-4" ]
     [ H.svg [ P.viewBox 0 0 displayer.width displayer.height ]
         $ graphWithBalls
             # Map.toUnfoldable
             <#> uncurry (drawPigeonhole displayer)
     ]
 
-legendView ∷ forall a. GraphDisplayer Int Int → Html a
-legendView { legend } =
-  H.div [ H.class_ "max-w rounded overflow-hidden shadow-lg p-4" ]
-    [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text "Légende" ]
-    , H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
+legendView ∷ forall a. Legend Int → Html a
+legendView legend =
+  card "Légende"
+    [ H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
         legend >>= \{ edge, name } ->
           [ H.div [ H.class_ "inline w-12 h-12", H.style "background-color" $ fromMaybe "black" $ colors !! edge ] []
           , H.span [ H.class_ "text-2xl" ] [ H.text $ " : " <> name ]
@@ -125,9 +132,8 @@ legendView { legend } =
 
 configView ∷ Config → Status → Html Msg
 configView conf status =
-  H.div [ H.class_ "max-w rounded overflow-hidden shadow-lg p-4" ]
-    [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text "Choix des paramètres" ]
-    , H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
+  card "Choix des paramètres"
+    [ H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
         [ H.div [] [ H.text "type de jeu" ]
         , H.select
             [ H.class_ selectClass
@@ -236,15 +242,14 @@ configView conf status =
 
 view ∷ Model → Html Msg
 view model =
-  H.div [ H.class_ "w-screen flex flex-row justify-around" ]
-    [ H.div [ H.class_ "max-w rounded overflow-hidden shadow-lg p-4 mr-4" ]
-        [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text "Visualisation de la machine" ]
-        , H.div [ H.class_ "flex flex-col" ]
+  H.div [ H.class_ "w-screen flex flex-row justify-around items-start" ]
+    [ card "Visualisation de la machine"
+        [ H.div [ H.class_ "flex flex-col" ]
             [ machineView displayer model.graphWithBalls
             , scoreView model.nbVictories model.nbLosses
             ]
         ]
-    , legendView displayer
+    , legendView displayer.legend
     , configView model.config model.status
     ]
   where

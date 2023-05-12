@@ -15,12 +15,13 @@ import Data.Tuple.Nested ((/\))
 import SM.Util (randomPick)
 
 data Graph v e = Graph (Map v (Array { edge ∷ e, dest ∷ v })) v
+type Legend e = Array { edge ∷ e, name ∷ String }
 
 type GraphDisplayer v e =
   { width ∷ Int
   , height ∷ Int
   , position ∷ v → Maybe { x ∷ Number, y ∷ Number }
-  , legend ∷ Array { edge ∷ e, name ∷ String }
+  , legend ∷ Legend e
   }
 
 
