@@ -49,20 +49,25 @@ drawPigeonhole
 drawPigeonhole displayer colors i balls =
   H.maybe (displayer.position i) \{ x, y } →
     H.g [ H.style "transform" $ translate (px x) (px y) ]   
-      [ H.path [ P.d "M1 1 L10 109 L90 109 L99 1", P.strokeWidth 3.0, P.stroke "#000", P.fill "transparent" ]
+      [ H.path 
+          [ P.d "M1 1 L10 109 L90 109 L99 1"
+          , P.strokeWidth 3.0
+          , P.stroke "#000"
+          , P.fill "transparent"
+          ]
       , H.g []
           ( let
               allBalls = concat
                 $ balls
                     <#> \{ nbBalls, edge } -> Array.replicate nbBalls edge
-              height = min 105 (Array.length allBalls)
+              height = Int.toNumber $ min 95 (Array.length allBalls)
             in
               pseudoShuffle $
                 allBalls
                   # mapWithIndex \j color →
                       H.circle
                         [ P.cx $ 15.0 + pseudoRandom (i + j) * 71.0
-                        , P.cy $ 100.0 - pseudoRandom (10 + i + j) * (Int.toNumber height)
+                        , P.cy $ 100.0 - pseudoRandom (10 + i + j) * height
                         , P.r 5.0
                         , P.fill $ fromMaybe "black" (colors !! color)
                         ]
@@ -125,7 +130,7 @@ legendView legend colors =
           [ H.input
             [ P.type_ "color"
             , H.class_ "inline w-12 h-12"
-            , P.value $ fromMaybe "black" $ colors !! edge
+            , P.value $ fromMaybe "#000000" $ colors !! edge
             , E.onValueChange (ColorChange edge)
             ]
           , H.span [ H.class_ "text-2xl" ] [ H.text $ " : " <> name ]

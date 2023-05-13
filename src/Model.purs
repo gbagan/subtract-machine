@@ -38,8 +38,8 @@ baseColors =
   [ "#f6b73c"  -- yellow
   , "#ff0000" --red
   , "#00ffff" --cyan"
-  , "90ee90" -- light green 
-  , "ff0090"  --magenta" 
+  , "#90ee90" -- light green 
+  , "#900090"  --magenta" 
   ]
 
 type GameResult =
@@ -104,6 +104,7 @@ adversaryPlays model pos =
 machinePlays' ∷ Model → Int → Gen (Maybe { edge :: Int, dest :: Int })
 machinePlays' model = machinePlays model.graphWithBalls
 
+-- | lance une partie et renvoie le résultat
 runGame ∷ Model → Gen GameResult
 runGame model = tailRecM go { moves: [], pos: model.source, isMachineTurn: model.config.machineStarts }
   where
@@ -117,6 +118,7 @@ runGame model = tailRecM go { moves: [], pos: model.source, isMachineTurn: model
         , pos: dest
         }
 
+-- | ajuste le nombre de balles de chaque casier en fonction du résultat de la partie
 adjustBalls ∷ Model → GameResult → Model
 adjustBalls model { moves, win } =
   model
@@ -149,12 +151,15 @@ adjustBalls model { moves, win } =
         )
         model.graphWithBalls
     <#> \balls →
+      -- si il n'y a plus de balles dans un casier, on n'en remet
       if all ((_ == 0) <<< _.nbBalls) balls then balls <#> _ { nbBalls = model.config.ballsPerColor }
       else balls
 
 nextGame ∷ Model → Gen Model
 nextGame st = runGame st <#> adjustBalls st
 
+-- | (ré)initialise les casiers en fonction de la configuration
+-- | et arrête la machine
 initMachine ∷ Model → Model
 initMachine model =
   model
@@ -177,6 +182,7 @@ initMachine model =
     Substract _ moves -> substractDisplayer moves
     King n m -> kingDisplayer n m
 
+-- | modèle initial
 init ∷ Model
 init = initMachine
   { config

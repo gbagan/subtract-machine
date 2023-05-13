@@ -1,7 +1,6 @@
 module SM.Update (update) where
 
 import Prelude
-import Control.Monad.Rec.Class (tailRecM, Step(..))
 import Control.Monad.Gen.Trans (Gen, GenState, runGen)
 import Control.Monad.Reader.Class (ask)
 import Control.Monad.Reader.Trans (ReaderT)
@@ -50,17 +49,16 @@ changeConfig f = modify_ $ initMachine <<< (_config %~ f)
 update ∷ Msg → Update' Model Msg Unit
 update RunMachine = do
   modify_ _ { status = Running }
-  tailRecM go unit
+  go
   where
-  go _ = do
+  go = do
     st ← get
     if st.status /= Running then do
       put st { status = Stopped }
-      pure $ Done unit
     else do
       update NextGame
       delay (Milliseconds $ if st.fastMode then 100.0 else 500.0)
-      pure $ Loop unit
+      go
 
 update StopMachine = modify_ _ { status = IsStopping }
 
