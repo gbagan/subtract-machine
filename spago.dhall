@@ -3,7 +3,6 @@
   [ "aff"
   , "arrays"
   , "control"
-  , "debug"
   , "effect"
   , "foldable-traversable"
   , "generate-values"
