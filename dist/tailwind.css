@@ -8,8 +8,8 @@
 */
 
 *,
-::before,
-::after {
+∷before,
+∷after {
   box-sizing: border-box;
   /* 1 */
   border-width: 0;
@@ -20,8 +20,8 @@
   /* 2 */
 }
 
-::before,
-::after {
+∷before,
+∷after {
   --tw-content: '';
 }
 
@@ -259,8 +259,8 @@ progress {
 Correct the cursor style of increment and decrement buttons in Safari.
 */
 
-::-webkit-inner-spin-button,
-::-webkit-outer-spin-button {
+∷-webkit-inner-spin-button,
+∷-webkit-outer-spin-button {
   height: auto;
 }
 
@@ -280,7 +280,7 @@ Correct the cursor style of increment and decrement buttons in Safari.
 Remove the inner padding in Chrome and Safari on macOS.
 */
 
-::-webkit-search-decoration {
+∷-webkit-search-decoration {
   -webkit-appearance: none;
 }
 
@@ -289,7 +289,7 @@ Remove the inner padding in Chrome and Safari on macOS.
 2. Change font properties to `inherit` in Safari.
 */
 
-::-webkit-file-upload-button {
+∷-webkit-file-upload-button {
   -webkit-appearance: button;
   /* 1 */
   font: inherit;
@@ -354,15 +354,15 @@ textarea {
 2. Set the default placeholder color to the user's configured gray 400 color.
 */
 
-input::-moz-placeholder, textarea::-moz-placeholder {
+input∷-moz-placeholder, textarea∷-moz-placeholder {
   opacity: 1;
   /* 1 */
   color: #9ca3af;
   /* 2 */
 }
 
-input::placeholder,
-textarea::placeholder {
+input∷placeholder,
+textarea∷placeholder {
   opacity: 1;
   /* 1 */
   color: #9ca3af;
@@ -422,7 +422,7 @@ video {
   display: none;
 }
 
-*, ::before, ::after {
+*, ∷before, ∷after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
   --tw-translate-x: 0;
@@ -472,7 +472,7 @@ video {
   --tw-backdrop-sepia:  ;
 }
 
-::backdrop {
+∷backdrop {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
   --tw-translate-x: 0;
