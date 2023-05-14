@@ -28,7 +28,7 @@ evalGen ∷ ∀model msg a. Gen a → Update' model msg a
 evalGen g = do
   {genState} ← ask
   st ← liftEffect $ Ref.read genState
-  let v /\ st' = runGen g model
+  let v /\ st' = runGen g st
   liftEffect $ Ref.write st' genState
   pure v
 
