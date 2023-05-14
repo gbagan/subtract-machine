@@ -15,8 +15,8 @@ import SM.Update (update)
 
 main ∷ Effect Unit
 main = do
-  newSeed <- randomSeed
-  genModel <- Ref.new {newSeed, size: 0}
+  newSeed ← randomSeed
+  genModel ← Ref.new {newSeed, size: 0}
   app
     { init: { model: init, msg: Nothing }
     , view

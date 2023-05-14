@@ -20,18 +20,17 @@ import SM.Model ( Config, Model, GraphType(..), Status(..)
 import SM.Msg (Msg(..))
 import Type.Proxy (Proxy(..))
 
-type Env = { genModel :: Ref GenState }
+type Env = { genModel ∷ Ref GenState }
 
 type Update' model msg a = Update model msg (ReaderT Env Aff) a
 
-evalGen ∷ ∀model msg a. Gen a -> Update' model msg a
+evalGen ∷ ∀model msg a. Gen a → Update' model msg a
 evalGen g = do
-  {genModel} <- ask
-  model <- liftEffect $ Ref.read genModel
+  {genModel} ← ask
+  model ← liftEffect $ Ref.read genModel
   let v /\ model' = runGen g model
   liftEffect $ Ref.write model' genModel
   pure v
-
 
 -- lenses
 _config ∷ Lens' Model Config
@@ -43,7 +42,7 @@ _graphType = prop (Proxy ∷ _ "graphType")
 _colors ∷ Lens' Model (Array String)
 _colors = prop (Proxy ∷ _ "colors")
 
-changeConfig :: (Config -> Config) -> Update' Model Msg Unit
+changeConfig ∷ (Config → Config) → Update' Model Msg Unit
 changeConfig f = modify_ $ initMachine <<< (_config %~ f)
 
 update ∷ Msg → Update' Model Msg Unit
@@ -94,11 +93,11 @@ update (SetReward n) = changeConfig _{ reward = fromMaybe 3 (Int.fromString n) }
 
 update (SetPenalty n) = changeConfig _{ penalty = fromMaybe (-1) (Int.fromString n) }
 
-update (SetAdversary val) = changeConfig _ { adversary = adversaryFromString val }
+update (SetAdversary val) = changeConfig _{ adversary = adversaryFromString val }
 
-update (SetBallsPerColor n) = changeConfig _ { ballsPerColor = fromMaybe 6 (Int.fromString n) }
+update (SetBallsPerColor n) = changeConfig _{ ballsPerColor = fromMaybe 6 (Int.fromString n) }
 
-update (SetMachineStarts val) = changeConfig _ { machineStarts = val == "y" }
+update (SetMachineStarts val) = changeConfig _{ machineStarts = val == "y" }
 
 update (ColorChange i val) = _colors <<< ix i .= val
 

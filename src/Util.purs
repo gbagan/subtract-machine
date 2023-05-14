@@ -27,6 +27,6 @@ pseudoRandom n = m - floor m
 
 pseudoShuffle ∷ forall a. Array a → Array a
 pseudoShuffle =
-  mapWithIndex (\i x -> pseudoRandom i /\ x)
+  mapWithIndex (\i x → pseudoRandom i /\ x)
   >>> sortBy (comparing fst)
   >>> map snd

@@ -19,22 +19,22 @@ import SM.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
 import SM.Msg (Msg(..))
 import SM.Util (pseudoRandom, pseudoShuffle)
 
-buttonClass :: String
+buttonClass ∷ String
 buttonClass = "py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
 
-checkboxClass :: String
+checkboxClass ∷ String
 checkboxClass = "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
 
-selectClass :: String
+selectClass ∷ String
 selectClass = "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
 
-inputNumberClass :: String
+inputNumberClass ∷ String
 inputNumberClass = "block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
 
-cardClass :: String
+cardClass ∷ String
 cardClass = "rounded overflow-hidden shadow-lg p-4"
 
-card :: forall a. String → Array (Html a) → Html a
+card ∷ forall a. String → Array (Html a) → Html a
 card title body =
   H.div [ H.class_ cardClass ] $
     [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text title ] ] <> body
@@ -44,7 +44,7 @@ drawPigeonhole
    . GraphDisplayer Int Int
   → Array String
   → Int
-  → Array { edge :: Int, dest :: Int, nbBalls :: Int }
+  → Array { edge ∷ Int, dest ∷ Int, nbBalls ∷ Int }
   → Html a
 drawPigeonhole displayer colors i balls =
   H.maybe (displayer.position i) \{ x, y } →
@@ -59,7 +59,7 @@ drawPigeonhole displayer colors i balls =
           ( let
               allBalls = concat
                 $ balls
-                    <#> \{ nbBalls, edge } -> Array.replicate nbBalls edge
+                    <#> \{ nbBalls, edge } → Array.replicate nbBalls edge
               height = Int.toNumber $ min 95 (Array.length allBalls)
             in
               pseudoShuffle $
@@ -78,18 +78,20 @@ drawPigeonhole displayer colors i balls =
             in
               balls
                 # scanl
-                    (\{ end } { nbBalls, edge } -> { begin: end, end: end + Int.toNumber nbBalls / total, edge })
+                    (\{ end } { nbBalls, edge } → { begin: end, end: end + Int.toNumber nbBalls / total, edge })
                     { begin: 0.0, end: 0.0, edge: -1 }
-                <#> \{ begin, end, edge } ->
+                <#> \{ begin, end, edge } →
                   H.rect
                     [ P.x $ 3.0 + 94.0 * begin
                     , P.y 115.0
-                    , P.width $ show (94.0 * (end - begin))
-                    , P.height "20"
+                    , P.width $ 94.0 * (end - begin)
+                    , P.height 20
                     , P.stroke "black"
                     , P.fill $ fromMaybe "black" (colors !! edge)
                     ]
           )
+      , H.maybe (displayer.vertexLabel i) \label →
+          H.text_ label [P.x 50, P.y 150]
       ]
 
 scoreView ∷ forall a. Int → Int → Html a
@@ -126,7 +128,7 @@ legendView ∷ Legend Int → Array String → Html Msg
 legendView legend colors =
   card "Légende"
     [ H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
-        legend >>= \{ edge, name } ->
+        legend >>= \{ edge, name } →
           [ H.input
             [ P.type_ "color"
             , H.class_ "inline w-12 h-12"
@@ -145,8 +147,8 @@ configView conf status =
         , H.select
             [ H.class_ selectClass
             , P.value $ case conf.graphType of
-                Substract _ _ -> "sub"
-                King _ _ -> "king"
+                Substract _ _ → "sub"
+                King _ _ → "king"
             , E.onValueChange SetGraphType
             ]
             [ H.option [ P.value "sub" ] [ H.text "Soustraction" ]
@@ -155,13 +157,13 @@ configView conf status =
         ]
           <>
             ( case conf.graphType of
-                Substract nbPigeonholes possibleMoves ->
+                Substract nbPigeonholes possibleMoves →
                   [ H.div [] [ H.text "Nombre de casiers" ]
                   , H.select
                       [ H.class_ selectClass
                       , P.value $ show nbPigeonholes
                       , E.onValueChange SetNbPigeonholes
-                      ] $ (8 .. 16) <#> \i ->
+                      ] $ (8 .. 16) <#> \i →
                       H.option [ P.value (show i) ] [ H.text (show i) ]
                   , H.div [] [ H.text "Coups possibles" ]
                   , H.div [ H.class_ "flex flex-row justify-between" ]
@@ -172,25 +174,25 @@ configView conf status =
                                   [ P.type_ "checkbox"
                                   , P.checked (Array.elem i possibleMoves)
                                   , H.class_ checkboxClass
-                                  , E.onChecked \_ -> TogglePossibleMove i
+                                  , E.onChecked \_ → TogglePossibleMove i
                                   ]
                               , H.span [ H.class_ "ml-2 text-sm font-medium text-gray-900" ] [ H.text $ show i ]
                               ]
                   ]
-                King width height ->
+                King width height →
                   [ H.div [] [ H.text "Hauteur de la grille" ]
                   , H.select
                       [ H.class_ selectClass
                       , P.value $ show height
                       , E.onValueChange SetKingHeight
-                      ] $ (3 .. 6) <#> \i ->
+                      ] $ (3 .. 6) <#> \i →
                       H.option [ P.value (show i) ] [ H.text (show i) ]
                   , H.div [] [ H.text "Largeur de la grille" ]
                   , H.select
                       [ H.class_ selectClass
                       , P.value $ show width
                       , E.onValueChange SetKingWidth
-                      ] $ (3 .. 6) <#> \i ->
+                      ] $ (3 .. 6) <#> \i →
                       H.option [ P.value (show i) ] [ H.text (show i) ]
                   ]
             )

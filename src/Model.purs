@@ -20,8 +20,8 @@ import SM.Graph
   , machinePlays
   , randomPlays
   , source
-  , substractDisplayer
-  , substractGraph
+  , nimDisplayer
+  , nimGraph
   )
 
 data Adversary = Random | Expert | Machine
@@ -74,9 +74,9 @@ type Model =
   , losingPositions ∷ Map Int Boolean
   , status ∷ Status
   , gameResult ∷ Maybe GameResult
-  , displayer :: GraphDisplayer Int Int
-  , colors :: Array String
-  , fastMode :: Boolean 
+  , displayer ∷ GraphDisplayer Int Int
+  , colors ∷ Array String
+  , fastMode ∷ Boolean 
   }
 
 adversaryFromString ∷ String → Adversary
@@ -94,14 +94,14 @@ updatePossibleMoves x moves
   | elem x moves = moves # filter (_ /= x)
   | otherwise = moves # cons x # sort
 
-adversaryPlays ∷ Model → Int → Gen (Maybe { edge :: Int, dest :: Int })
+adversaryPlays ∷ Model → Int → Gen (Maybe { edge ∷ Int, dest ∷ Int })
 adversaryPlays model pos =
   case model.config.adversary of
     Random → randomPlays model.graphWithBalls pos
     Expert → expertPlays model.graphWithBalls model.losingPositions pos
     Machine → machinePlays model.graphWithBalls pos
 
-machinePlays' ∷ Model → Int → Gen (Maybe { edge :: Int, dest :: Int })
+machinePlays' ∷ Model → Int → Gen (Maybe { edge ∷ Int, dest ∷ Int })
 machinePlays' model = machinePlays model.graphWithBalls
 
 -- | lance une partie et renvoie le résultat
@@ -144,15 +144,16 @@ adjustBalls model { moves, win } =
     # foldr
         ( \{ isMachineTurn, pos, edge } →
             flip Map.update pos
-              ( Just <<< map \nbor@{ edge: e, nbBalls } ->
+              ( Just <<< map \nbor@{ edge: e, nbBalls } →
                   if edge /= e then nbor
                   else nbor { nbBalls = adjustBalls' isMachineTurn nbBalls }
               )
         )
         model.graphWithBalls
     <#> \balls →
-      -- si il n'y a plus de balles dans un casier, on n'en remet
-      if all ((_ == 0) <<< _.nbBalls) balls then balls <#> _ { nbBalls = model.config.ballsPerColor }
+      -- si il n'y a plus de balles dans un casier, on en remet
+      if all ((_ == 0) <<< _.nbBalls) balls
+      then balls <#> _ { nbBalls = model.config.ballsPerColor }
       else balls
 
 nextGame ∷ Model → Gen Model
@@ -174,13 +175,13 @@ initMachine model =
     }
   where
   graph = case model.config.graphType of
-    Substract nb possibleMoves → substractGraph nb possibleMoves
+    Substract nb possibleMoves → nimGraph nb possibleMoves
     King n m → kingGraph' n m
   graphWithBalls = addBallsToGraph model.config.ballsPerColor graph
   losing = losingPositions graph
   displayer = case model.config.graphType of
-    Substract _ moves -> substractDisplayer moves
-    King n m -> kingDisplayer n m
+    Substract _ moves → nimDisplayer moves
+    King n m → kingDisplayer n m
 
 -- | modèle initial
 init ∷ Model
