@@ -156,8 +156,9 @@ adjustBalls model { moves, win } =
       then balls <#> _ { nbBalls = model.config.ballsPerColor }
       else balls
 
+-- | simule une partie et ajuste les billes en fonction du résultat
 nextGame ∷ Model → Gen Model
-nextGame st = runGame st <#> adjustBalls st
+nextGame model = runGame model <#> adjustBalls model
 
 -- | (ré)initialise les casiers en fonction de la configuration
 -- | et arrête la machine
