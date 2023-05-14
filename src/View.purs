@@ -147,7 +147,7 @@ configView conf status =
         , H.select
             [ H.class_ selectClass
             , P.value $ case conf.graphType of
-                Substract _ _ → "nim"
+                Nim _ _ → "nim"
                 King _ _ → "king"
             , E.onValueChange SetGraphType
             ]
@@ -157,12 +157,12 @@ configView conf status =
         ]
           <>
             ( case conf.graphType of
-                Substract nbPigeonholes possibleMoves →
+                Nim nbBoxes possibleMoves →
                   [ H.div [] [ H.text "Nombre de casiers" ]
                   , H.select
                       [ H.class_ selectClass
-                      , P.value $ show nbPigeonholes
-                      , E.onValueChange SetNbPigeonholes
+                      , P.value $ show nbBoxes
+                      , E.onValueChange SetNbBoxes
                       ] $ (8 .. 16) <#> \i →
                       H.option [ P.value (show i) ] [ H.text (show i) ]
                   , H.div [] [ H.text "Coups possibles" ]

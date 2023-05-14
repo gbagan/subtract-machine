@@ -5,7 +5,7 @@ data Msg
   | RunMachine
   | StopMachine
   | SetGraphType String
-  | SetNbPigeonholes String
+  | SetNbBoxes String
   | TogglePossibleMove Int
   | SetKingWidth String
   | SetKingHeight String

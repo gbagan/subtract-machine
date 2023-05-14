@@ -53,7 +53,7 @@ type GameResult =
   }
 
 data GraphType
-  = Substract Int (Array Int)
+  = Nim Int (Array Int)
   | King Int Int
 
 type Config =
@@ -175,12 +175,12 @@ initMachine model =
     }
   where
   graph = case model.config.graphType of
-    Substract nb possibleMoves → nimGraph nb possibleMoves
+    Nim nb possibleMoves → nimGraph nb possibleMoves
     King n m → kingGraph' n m
   machine = graphToMachine model.config.ballsPerColor graph
   losing = losingPositions graph
   displayer = case model.config.graphType of
-    Substract _ moves → nimDisplayer moves
+    Nim _ moves → nimDisplayer moves
     King n m → kingDisplayer n m
 
 -- | modèle initial
@@ -200,7 +200,7 @@ init = initMachine
   }
   where
   config =
-    { graphType: Substract 8 [ 1, 2 ]
+    { graphType: Nim 8 [ 1, 2 ]
     , adversary: Random
     , ballsPerColor: 6
     , reward: 3

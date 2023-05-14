@@ -66,17 +66,17 @@ update NextGame = do
   put =<< evalGen (nextGame st)
 
 update (SetGraphType val) = changeConfig _{ graphType =
-                              if val == "sub" then Substract 8 [1, 2] else King 3 3
+                              if val == "sub" then Nim 8 [1, 2] else King 3 3
                           }
 
-update (SetNbPigeonholes n) = changeConfig $ _graphType %~
+update (SetNbBoxes n) = changeConfig $ _graphType %~
   case _ of
-    Substract _ moves → Substract (fromMaybe 8 (Int.fromString n)) moves
+    Nim _ moves → Nim (fromMaybe 8 (Int.fromString n)) moves
     x → x
 
 update (TogglePossibleMove i) = changeConfig $ _graphType %~
   case _ of
-    Substract n moves → Substract n (updatePossibleMoves i moves)
+    Nim n moves → Nim n (updatePossibleMoves i moves)
     x → x
 
 update (SetKingWidth n) = changeConfig $ _graphType %~
