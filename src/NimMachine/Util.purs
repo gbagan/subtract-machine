@@ -31,5 +31,5 @@ pseudoShuffle =
   >>> sortBy (comparing fst)
   >>> map snd
 
-booleanMapToSet ∷ forall v. Ord v => Map v Boolean -> Set v
+booleanMapToSet ∷ forall v. Ord v ⇒ Map v Boolean -> Set v
 booleanMapToSet = Map.filter identity >>> map (const unit) >>> Set.fromMap
