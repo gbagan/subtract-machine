@@ -5,8 +5,9 @@ import Prelude
 import Control.Monad.Gen.Trans (Gen)
 import Control.Monad.Rec.Class (tailRecM, Step(..))
 import Data.Array (all, cons, elem, filter, foldr, snoc, sort)
-import Data.Map (Map)
 import Data.Map as Map
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Maybe (Maybe(..))
 import NimMachine.Graph
   ( Machine
@@ -71,7 +72,7 @@ type Model =
   , nbVictories ∷ Int
   , nbLosses ∷ Int
   , machine ∷ Machine Int Int
-  , losingPositions ∷ Map Int Boolean
+  , losingPositions ∷ Set Int
   , status ∷ Status
   , displayer ∷ GraphDisplayer Int Int
   , colors ∷ Array String
@@ -167,7 +168,7 @@ initMachine model =
     , source = source graph
     , nbVictories = 0
     , nbLosses = 0
-    , losingPositions = losing
+    , losingPositions = losingPositions graph
     , status = Stopped
     , displayer = displayer
     }
@@ -176,7 +177,6 @@ initMachine model =
     Nim nb possibleMoves → nimGraph nb possibleMoves
     King n m → kingGraph' n m
   machine = graphToMachine model.config.ballsPerColor graph
-  losing = losingPositions graph
   displayer = case model.config.graphType of
     Nim _ moves → nimDisplayer moves
     King n m → kingDisplayer n m
@@ -189,7 +189,7 @@ init = initMachine
   , nbVictories: 0
   , nbLosses: 0
   , machine: Map.empty
-  , losingPositions: Map.empty
+  , losingPositions: Set.empty
   , status: Stopped
   , displayer: defaultDisplayer
   , colors: baseColors

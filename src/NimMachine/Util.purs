@@ -6,6 +6,10 @@ import Data.Array ((!!), length, mapWithIndex, sortBy, zipWith)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Number (floor, sin)
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\))
 
@@ -26,3 +30,6 @@ pseudoShuffle =
   mapWithIndex (\i x → pseudoRandom i /\ x)
   >>> sortBy (comparing fst)
   >>> map snd
+
+booleanMapToSet ∷ forall v. Ord v => Map v Boolean -> Set v
+booleanMapToSet = Map.filter identity >>> map (const unit) >>> Set.fromMap

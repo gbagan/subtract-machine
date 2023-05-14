@@ -9,10 +9,12 @@ import Data.Int (toNumber)
 import Data.Lazy (defer, force)
 import Data.Map (Map)
 import Data.Map as Map
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
-import NimMachine.Util (randomPick)
+import NimMachine.Util (booleanMapToSet, randomPick)
 
 data Graph v e = Graph (Map v (Array { edge ∷ e, dest ∷ v })) v
 type Legend e = Array { edge ∷ e, name ∷ String }
@@ -106,8 +108,8 @@ kingDisplayer width height =
   where
   maxdim = max width height
 
-losingPositions ∷ ∀ v e. Ord v ⇒ Graph v e → Map v Boolean
-losingPositions (Graph graph _) = force <$> t
+losingPositions ∷ ∀ v e. Ord v ⇒ Graph v e → Set v
+losingPositions (Graph graph _) = booleanMapToSet $ force <$> t
   where
   t = graph <#> \nbors → defer \_ →
     nbors # all \{ dest } → maybe true (not <<< force) (Map.lookup dest t)
@@ -128,14 +130,14 @@ expertPlays
   ∷ ∀ v e
   . Ord v
   ⇒ Machine v e
-  → Map v Boolean
+  → Set v
   → v
   → Gen (Maybe { edge ∷ e, dest ∷ v })
 expertPlays graph losing v
-  | Map.lookup v losing == Just true = randomPlays graph v
+  | Set.member v losing = randomPlays graph v
   | otherwise = pure $ do
       nbors ← Map.lookup v graph
-      { edge, dest } ← nbors # find \{ dest } → Map.lookup dest losing == Just true
+      { edge, dest } ← nbors # find \{ dest } → Set.member dest losing
       pure { edge, dest }
 
 -- | joue au hasard en fonction du nombre de balles de chaque couleur dans le casier
