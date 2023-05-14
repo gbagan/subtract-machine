@@ -20,16 +20,16 @@ import NimMachine.Model ( Config, Model, GraphType(..), Status(..)
 import NimMachine.Msg (Msg(..))
 import Type.Proxy (Proxy(..))
 
-type Env = { genModel ∷ Ref GenState }
+type Env = { genState ∷ Ref GenState }
 
 type Update' model msg a = Update model msg (ReaderT Env Aff) a
 
 evalGen ∷ ∀model msg a. Gen a → Update' model msg a
 evalGen g = do
-  {genModel} ← ask
-  model ← liftEffect $ Ref.read genModel
-  let v /\ model' = runGen g model
-  liftEffect $ Ref.write model' genModel
+  {genState} ← ask
+  st ← liftEffect $ Ref.read genState
+  let v /\ st' = runGen g model
+  liftEffect $ Ref.write st' genState
   pure v
 
 -- lenses
