@@ -1,20 +1,12 @@
 module NimMachine.Update (update) where
 
-import Prelude
-import Control.Monad.Gen.Trans (Gen, GenState, runGen)
-import Control.Monad.Reader.Class (ask)
-import Control.Monad.Reader.Trans (ReaderT)
+import Relude
+
+import Control.Monad.Gen.Trans (GenState, runGen)
 import Data.Int as Int
-import Data.Lens (Lens', (%~), (.=))
-import Data.Lens.Index (ix)
-import Data.Lens.Record (prop)
-import Data.Maybe (fromMaybe)
-import Data.Tuple.Nested ((/\))
-import Effect.Class (liftEffect)
-import Effect.Aff (Aff)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
-import Pha.Update (Update, Milliseconds(..), get, modify_, put, delay)
+import Pha.Update (Update, Milliseconds(..), delay)
 import NimMachine.Model ( Config, Model, GraphType(..), Status(..)
                 , initMachine, nextGame, adversaryFromString, updatePossibleMoves)
 import NimMachine.Msg (Msg(..))

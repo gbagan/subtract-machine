@@ -1,19 +1,10 @@
 module NimMachine.Graph where
 
-import Prelude
+import Relude
 
-import Control.Alternative (guard)
-import Control.Monad.Gen.Trans (Gen)
-import Data.Array ((..), all, filter, find, replicate)
-import Data.Int (toNumber)
-import Data.Lazy (defer, force)
-import Data.Map (Map)
+import Data.Array ((..))
 import Data.Map as Map
-import Data.Set (Set)
 import Data.Set as Set
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Tuple (Tuple)
-import Data.Tuple.Nested ((/\))
 import NimMachine.Util (booleanMapToSet, randomPick)
 
 data Graph v e = Graph (Map v (Array { edge ∷ e, dest ∷ v })) v
@@ -100,7 +91,7 @@ kingDisplayer width height =
       if v == 0 then Nothing
       else Just
         { x: 50.0 + 180.0 * toNumber (v `mod` width)
-        , y: 10.0 + 180.0 * toNumber (height - v `div` width - 1)
+        , y: 10.0 + 180.0 * toNumber (height - v / width - 1)
         }
   , legend: [ { edge: 0, name: "⇐" }, { edge: 1, name: "⇙" }, { edge: 2, name: "⇓" } ]
   , vertexLabel: const Nothing

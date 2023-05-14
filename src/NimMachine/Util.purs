@@ -1,17 +1,11 @@
 module NimMachine.Util where
 
-import Control.Monad.Gen.Trans (Gen, chooseInt)
-import Prelude
-import Data.Array ((!!), length, mapWithIndex, sortBy, zipWith)
-import Data.Int as Int
-import Data.Maybe (Maybe(..))
-import Data.Number (floor, sin)
-import Data.Map (Map)
+import Relude
+
+import Control.Monad.Gen.Trans (chooseInt)
+import Data.Number as Number
 import Data.Map as Map
-import Data.Set (Set)
 import Data.Set as Set
-import Data.Tuple (fst, snd)
-import Data.Tuple.Nested ((/\))
 
 map2 ∷ ∀a b c. Array a → Array b → (a → b → c) → Array c
 map2 t1 t2 fn = zipWith ($) (map fn t1) t2
@@ -21,14 +15,14 @@ randomPick [] = pure Nothing
 randomPick t  = (t !! _) <$> chooseInt 0 (length t - 1)
 
 pseudoRandom ∷ Int → Number
-pseudoRandom n = m - floor m
+pseudoRandom n = m - Number.floor m
   where
-  m = 100.0 * sin (Int.toNumber (n + 1))
+  m = 100.0 * sin (toNumber (n + 1))
 
 pseudoShuffle ∷ forall a. Array a → Array a
 pseudoShuffle =
   mapWithIndex (\i x → pseudoRandom i /\ x)
-  >>> sortBy (comparing fst)
+  >>> sortWith fst
   >>> map snd
 
 booleanMapToSet ∷ forall v. Ord v ⇒ Map v Boolean → Set v

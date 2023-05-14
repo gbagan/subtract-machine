@@ -1,10 +1,8 @@
 module NimMachine.Main (main) where
 
-import Prelude
+import Relude hiding (view)
 
 import Control.Monad.Reader.Trans (runReaderT)
-import Data.Maybe (Maybe(..))
-import Effect (Effect)
 import Effect.Ref as Ref
 import Pha.App (app)
 import Pha.Update (hoist)

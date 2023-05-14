@@ -1,14 +1,10 @@
 module NimMachine.Model where
 
-import Prelude
+import Relude
 
-import Control.Monad.Gen.Trans (Gen)
 import Control.Monad.Rec.Class (tailRecM, Step(..))
-import Data.Array (all, cons, elem, filter, foldr, snoc, sort)
 import Data.Map as Map
-import Data.Set (Set)
 import Data.Set as Set
-import Data.Maybe (Maybe(..))
 import NimMachine.Graph
   ( Machine
   , GraphDisplayer

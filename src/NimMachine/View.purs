@@ -1,14 +1,9 @@
 module NimMachine.View (view) where
 
-import Prelude
+import Relude
 
-import Data.Array ((!!), (..), concat, mapWithIndex, scanl)
-import Data.Array as Array
-import Data.Foldable (sum)
-import Data.Int as Int
+import Data.Array ((..))
 import Data.Map as Map
-import Data.Maybe (fromMaybe)
-import Data.Tuple (uncurry)
 import Pha.Html (Html)
 import Pha.Html as H
 import Pha.Html.Attributes as P
@@ -59,8 +54,8 @@ drawPigeonhole displayer colors i balls =
           ( let
               allBalls = concat
                 $ balls
-                    <#> \{ nbBalls, edge } → Array.replicate nbBalls edge
-              height = Int.toNumber $ min 95 (Array.length allBalls)
+                    <#> \{ nbBalls, edge } → replicate nbBalls edge
+              height = toNumber $ min 95 (length allBalls)
             in
               pseudoShuffle $
                 allBalls
@@ -74,11 +69,11 @@ drawPigeonhole displayer colors i balls =
           )
       , H.g []
           ( let
-              total = Int.toNumber $ sum (_.nbBalls <$> balls)
+              total = toNumber $ sum (_.nbBalls <$> balls)
             in
               balls
                 # scanl
-                    (\{ end } { nbBalls, edge } → { begin: end, end: end + Int.toNumber nbBalls / total, edge })
+                    (\{ end } { nbBalls, edge } → { begin: end, end: end + toNumber nbBalls / total, edge })
                     { begin: 0.0, end: 0.0, edge: -1 }
                 <#> \{ begin, end, edge } →
                   H.rect
@@ -108,7 +103,7 @@ scoreView nbVictories nbLosses =
                   if n == 0 then
                     0.5
                   else
-                    Int.toNumber nbVictories / Int.toNumber n
+                    toNumber nbVictories / toNumber n
             ]
             []
         ]
@@ -172,7 +167,7 @@ configView conf status =
                             H.label []
                               [ H.input
                                   [ P.type_ "checkbox"
-                                  , P.checked (Array.elem i possibleMoves)
+                                  , P.checked (elem i possibleMoves)
                                   , H.class_ checkboxClass
                                   , E.onChecked \_ → TogglePossibleMove i
                                   ]

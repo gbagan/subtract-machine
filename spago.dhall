@@ -1,24 +1,17 @@
 { name = "purescript"
 , dependencies =
-  [ "aff"
-  , "arrays"
-  , "control"
-  , "effect"
-  , "foldable-traversable"
+  [ "arrays"
   , "generate-values"
   , "integers"
-  , "lazy"
   , "lcg"
-  , "maybe"
   , "numbers"
   , "ordered-collections"
   , "pha"
   , "prelude"
-  , "profunctor-lenses"
   , "refs"
+  , "relude"
   , "tailrec"
   , "transformers"
-  , "tuples"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
