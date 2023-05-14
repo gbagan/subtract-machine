@@ -1,4 +1,4 @@
-module Main (main) where
+module NimMachine.Main (main) where
 
 import Prelude
 
@@ -9,9 +9,9 @@ import Effect.Ref as Ref
 import Pha.App (app)
 import Pha.Update (hoist)
 import Random.LCG (randomSeed)
-import SM.View (view)
-import SM.Model (init)
-import SM.Update (update)
+import NimMachine.View (view)
+import NimMachine.Model (init)
+import NimMachine.Update (update)
 
 main ∷ Effect Unit
 main = do

@@ -1,4 +1,4 @@
-module SM.View (view) where
+module NimMachine.View (view) where
 
 import Prelude
 
@@ -14,10 +14,10 @@ import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
-import SM.Graph (GraphDisplayer, Machine, Legend)
-import SM.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
-import SM.Msg (Msg(..))
-import SM.Util (pseudoRandom, pseudoShuffle)
+import NimMachine.Graph (GraphDisplayer, Machine, Legend)
+import NimMachine.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
+import NimMachine.Msg (Msg(..))
+import NimMachine.Util (pseudoRandom, pseudoShuffle)
 
 buttonClass ∷ String
 buttonClass = "py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"

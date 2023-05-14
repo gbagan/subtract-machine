@@ -1,17 +1,13 @@
-module SM.Util where
+module NimMachine.Util where
 
 import Control.Monad.Gen.Trans (Gen, chooseInt)
 import Prelude
-import Data.Array ((..), (!!), length, mapWithIndex, sortBy, zipWith)
+import Data.Array ((!!), length, mapWithIndex, sortBy, zipWith)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Number (floor, sin)
 import Data.Tuple (fst, snd)
 import Data.Tuple.Nested ((/\))
-
-repeat ∷ ∀a. Int → (Int → a) → Array a
-repeat 0 _ = []
-repeat n f = f <$> 0 .. (n - 1)
 
 map2 ∷ ∀a b c. Array a → Array b → (a → b → c) → Array c
 map2 t1 t2 fn = zipWith ($) (map fn t1) t2

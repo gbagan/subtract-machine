@@ -1,4 +1,4 @@
-module SM.Msg where
+module NimMachine.Msg where
 
 data Msg
   = NextGame

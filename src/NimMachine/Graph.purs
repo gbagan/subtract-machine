@@ -1,4 +1,4 @@
-module SM.Graph where
+module NimMachine.Graph where
 
 import Prelude
 
@@ -12,7 +12,7 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
-import SM.Util (randomPick)
+import NimMachine.Util (randomPick)
 
 data Graph v e = Graph (Map v (Array { edge ∷ e, dest ∷ v })) v
 type Legend e = Array { edge ∷ e, name ∷ String }

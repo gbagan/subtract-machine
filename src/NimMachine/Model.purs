@@ -1,4 +1,4 @@
-module SM.Model where
+module NimMachine.Model where
 
 import Prelude
 
@@ -8,7 +8,7 @@ import Data.Array (all, cons, elem, filter, foldr, snoc, sort)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import SM.Graph
+import NimMachine.Graph
   ( Machine
   , GraphDisplayer
   , graphToMachine

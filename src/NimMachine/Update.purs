@@ -1,4 +1,4 @@
-module SM.Update (update) where
+module NimMachine.Update (update) where
 
 import Prelude
 import Control.Monad.Gen.Trans (Gen, GenState, runGen)
@@ -15,9 +15,9 @@ import Effect.Aff (Aff)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Pha.Update (Update, Milliseconds(..), get, modify_, put, delay)
-import SM.Model ( Config, Model, GraphType(..), Status(..)
+import NimMachine.Model ( Config, Model, GraphType(..), Status(..)
                 , initMachine, nextGame, adversaryFromString, updatePossibleMoves)
-import SM.Msg (Msg(..))
+import NimMachine.Msg (Msg(..))
 import Type.Proxy (Proxy(..))
 
 type Env = { genModel ∷ Ref GenState }
