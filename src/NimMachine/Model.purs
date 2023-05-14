@@ -73,7 +73,6 @@ type Model =
   , machine ∷ Machine Int Int
   , losingPositions ∷ Map Int Boolean
   , status ∷ Status
-  , gameResult ∷ Maybe GameResult
   , displayer ∷ GraphDisplayer Int Int
   , colors ∷ Array String
   , fastMode ∷ Boolean 
@@ -125,7 +124,6 @@ adjustBalls model { moves, win } =
     { machine = machine
     , nbVictories = model.nbVictories + (if win then 1 else 0)
     , nbLosses = model.nbLosses + (if win then 0 else 1)
-    , gameResult = Just { moves, win }
     }
   where
   adjustBalls' isMachineTurn nbBalls =
@@ -171,7 +169,6 @@ initMachine model =
     , nbLosses = 0
     , losingPositions = losing
     , status = Stopped
-    , gameResult = Nothing
     , displayer = displayer
     }
   where
@@ -194,7 +191,6 @@ init = initMachine
   , machine: Map.empty
   , losingPositions: Map.empty
   , status: Stopped
-  , gameResult: Nothing
   , displayer: defaultDisplayer
   , colors: baseColors
   , fastMode: false
