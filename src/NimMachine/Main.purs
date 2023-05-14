@@ -16,10 +16,10 @@ import NimMachine.Update (update)
 main ∷ Effect Unit
 main = do
   newSeed ← randomSeed
-  genModel ← Ref.new {newSeed, size: 0}
+  genState ← Ref.new {newSeed, size: 0}
   app
     { init: { model: init, msg: Nothing }
     , view
-    , update: hoist (flip runReaderT {genModel}) <<< update
+    , update: hoist (flip runReaderT {genState}) <<< update
     , selector: "#root"
     }
