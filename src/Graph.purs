@@ -25,6 +25,15 @@ type GraphDisplayer v e =
   , vertexLabel ∷ v → Maybe String
   }
 
+defaultDisplayer ∷ forall v e. GraphDisplayer v e
+defaultDisplayer =
+  { width: 0
+  , height: 0
+  , position: const Nothing
+  , legend: []
+  , vertexLabel: const Nothing
+  }
+
 source ∷ ∀ v e. Graph v e → v
 source (Graph _ s) = s
 
@@ -34,11 +43,14 @@ mapVertices f (Graph graph v) = Graph (Map.fromFoldable elems') (f v)
   elems = Map.toUnfoldable graph ∷ Array _
   elems' = elems <#> \(i /\ nbors) → (f i /\ (nbors <#> \{ edge, dest } → { edge, dest: f dest }))
 
-type VertexWithBalls v e = Array { edge ∷ e, dest ∷ v, nbBalls ∷ Int }
-type GraphWithBalls v e = Map v (VertexWithBalls v e)
+-- | représente un casier
+type MachineBox v e = Array { edge ∷ e, dest ∷ v, nbBalls ∷ Int }
 
-addBallsToGraph ∷ ∀ v e. Ord v ⇒ Int → Graph v e → GraphWithBalls v e
-addBallsToGraph nbBalls (Graph graph _) = graph <#> map \{ edge, dest } → { edge, dest, nbBalls }
+-- | représente l'ensemble des casiers
+type Machine v e = Map v (MachineBox v e)
+
+graphToMachine ∷ ∀ v e. Ord v ⇒ Int → Graph v e → Machine v e
+graphToMachine nbBalls (Graph graph _) = graph <#> map \{ edge, dest } → { edge, dest, nbBalls }
 
 nimGraph ∷ Int → Array Int → Graph Int Int
 nimGraph n moves = Graph (Map.fromFoldable $ 0 .. n <#> \i → i /\ nbors i) n
@@ -47,15 +59,6 @@ nimGraph n moves = Graph (Map.fromFoldable $ 0 .. n <#> \i → i /\ nbors i) n
     j ← moves
     guard (i - j >= 0)
     pure { edge: j - 1, dest: i - j }
-
-defaultDisplayer ∷ forall v e. GraphDisplayer v e
-defaultDisplayer =
-  { width: 0
-  , height: 0
-  , position: const Nothing
-  , legend: []
-  , vertexLabel: const Nothing
-  }
 
 nimDisplayer ∷ Array Int → GraphDisplayer Int Int
 nimDisplayer moves =
@@ -112,7 +115,7 @@ losingPositions (Graph graph _) = force <$> t
 randomPlays
   ∷ ∀ v e
   . Ord v
-  ⇒ GraphWithBalls v e
+  ⇒ Machine v e
   → v
   → Gen (Maybe { edge ∷ e, dest ∷ v })
 randomPlays graph v = do
@@ -120,10 +123,11 @@ randomPlays graph v = do
     Nothing → pure Nothing
     Just nbors → randomPick nbors <#> map \{ edge, dest } → { edge, dest }
 
+-- | joue le coup optimal si il existe, sinon joue un coup aléatoire
 expertPlays
   ∷ ∀ v e
   . Ord v
-  ⇒ GraphWithBalls v e
+  ⇒ Machine v e
   → Map v Boolean
   → v
   → Gen (Maybe { edge ∷ e, dest ∷ v })
@@ -134,10 +138,11 @@ expertPlays graph losing v
       { edge, dest } ← nbors # find \{ dest } → Map.lookup dest losing == Just true
       pure { edge, dest }
 
+-- | joue au hasard en fonction du nombre de balles de chaque couleur dans le casier
 machinePlays
   ∷ ∀ v e
   . Ord v
-  ⇒ GraphWithBalls v e
+  ⇒ Machine v e
   → v
   → Gen (Maybe { edge ∷ e, dest ∷ v })
 machinePlays balls v =

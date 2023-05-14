@@ -14,7 +14,7 @@ import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
-import SM.Graph (GraphDisplayer, GraphWithBalls, Legend)
+import SM.Graph (GraphDisplayer, Machine, Legend)
 import SM.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
 import SM.Msg (Msg(..))
 import SM.Util (pseudoRandom, pseudoShuffle)
@@ -115,11 +115,11 @@ scoreView nbVictories nbLosses =
     , H.span [ H.class_ "text-red-600 font-bold" ] [ H.text $ "Défaites: " <> show nbLosses ]
     ]
 
-machineView ∷ forall a. GraphDisplayer Int Int → Array String → GraphWithBalls Int Int → Html a
-machineView displayer colors graphWithBalls =
+machineView ∷ forall a. GraphDisplayer Int Int → Array String → Machine Int Int → Html a
+machineView displayer colors machine =
   H.div [ H.class_ "w-[42vw]" ]
     [ H.svg [ P.viewBox 0 0 displayer.width displayer.height ]
-        $ graphWithBalls
+        $ machine
             # Map.toUnfoldable
             <#> uncurry (drawPigeonhole displayer colors)
     ]
@@ -259,7 +259,7 @@ view model =
   H.div [ H.class_ "w-screen flex flex-row justify-around items-start" ]
     [ card "Visualisation de la machine"
         [ H.div [ H.class_ "flex flex-col" ]
-            [ machineView model.displayer model.colors model.graphWithBalls
+            [ machineView model.displayer model.colors model.machine
             , scoreView model.nbVictories model.nbLosses
             ]
         ]

@@ -9,9 +9,9 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import SM.Graph
-  ( GraphDisplayer
-  , GraphWithBalls
-  , addBallsToGraph
+  ( Machine
+  , GraphDisplayer
+  , graphToMachine
   , defaultDisplayer
   , expertPlays
   , kingDisplayer
@@ -70,7 +70,7 @@ type Model =
   , source ∷ Int
   , nbVictories ∷ Int
   , nbLosses ∷ Int
-  , graphWithBalls ∷ GraphWithBalls Int Int
+  , machine ∷ Machine Int Int
   , losingPositions ∷ Map Int Boolean
   , status ∷ Status
   , gameResult ∷ Maybe GameResult
@@ -97,12 +97,12 @@ updatePossibleMoves x moves
 adversaryPlays ∷ Model → Int → Gen (Maybe { edge ∷ Int, dest ∷ Int })
 adversaryPlays model pos =
   case model.config.adversary of
-    Random → randomPlays model.graphWithBalls pos
-    Expert → expertPlays model.graphWithBalls model.losingPositions pos
-    Machine → machinePlays model.graphWithBalls pos
+    Random → randomPlays model.machine pos
+    Expert → expertPlays model.machine model.losingPositions pos
+    Machine → machinePlays model.machine pos
 
 machinePlays' ∷ Model → Int → Gen (Maybe { edge ∷ Int, dest ∷ Int })
-machinePlays' model = machinePlays model.graphWithBalls
+machinePlays' model = machinePlays model.machine
 
 -- | lance une partie et renvoie le résultat
 runGame ∷ Model → Gen GameResult
@@ -118,11 +118,11 @@ runGame model = tailRecM go { moves: [], pos: model.source, isMachineTurn: model
         , pos: dest
         }
 
--- | ajuste le nombre de balles de chaque casier en fonction du résultat de la partie
+-- | ajuste le nombre de balles de chaque casier de la machine en fonction du résultat de la partie
 adjustBalls ∷ Model → GameResult → Model
 adjustBalls model { moves, win } =
   model
-    { graphWithBalls = graphWithBalls
+    { machine = machine
     , nbVictories = model.nbVictories + (if win then 1 else 0)
     , nbLosses = model.nbLosses + (if win then 0 else 1)
     , gameResult = Just { moves, win }
@@ -140,7 +140,7 @@ adjustBalls model { moves, win } =
           )
       )
 
-  graphWithBalls = moves
+  machine = moves
     # foldr
         ( \{ isMachineTurn, pos, edge } →
             flip Map.update pos
@@ -149,7 +149,7 @@ adjustBalls model { moves, win } =
                   else nbor { nbBalls = adjustBalls' isMachineTurn nbBalls }
               )
         )
-        model.graphWithBalls
+        model.machine
     <#> \balls →
       -- si il n'y a plus de balles dans un casier, on en remet
       if all ((_ == 0) <<< _.nbBalls) balls
@@ -164,7 +164,7 @@ nextGame st = runGame st <#> adjustBalls st
 initMachine ∷ Model → Model
 initMachine model =
   model
-    { graphWithBalls = graphWithBalls
+    { machine = machine
     , source = source graph
     , nbVictories = 0
     , nbLosses = 0
@@ -177,7 +177,7 @@ initMachine model =
   graph = case model.config.graphType of
     Substract nb possibleMoves → nimGraph nb possibleMoves
     King n m → kingGraph' n m
-  graphWithBalls = addBallsToGraph model.config.ballsPerColor graph
+  machine = graphToMachine model.config.ballsPerColor graph
   losing = losingPositions graph
   displayer = case model.config.graphType of
     Substract _ moves → nimDisplayer moves
@@ -190,7 +190,7 @@ init = initMachine
   , source: 0
   , nbVictories: 0
   , nbLosses: 0
-  , graphWithBalls: Map.empty
+  , machine: Map.empty
   , losingPositions: Map.empty
   , status: Stopped
   , gameResult: Nothing
