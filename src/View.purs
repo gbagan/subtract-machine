@@ -147,11 +147,11 @@ configView conf status =
         , H.select
             [ H.class_ selectClass
             , P.value $ case conf.graphType of
-                Substract _ _ → "sub"
+                Substract _ _ → "nim"
                 King _ _ → "king"
             , E.onValueChange SetGraphType
             ]
-            [ H.option [ P.value "sub" ] [ H.text "Soustraction" ]
+            [ H.option [ P.value "nim" ] [ H.text "Nim" ]
             , H.option [ P.value "king" ] [ H.text "Roi" ]
             ]
         ]
