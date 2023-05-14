@@ -13,3 +13,4 @@
 /bundle.*
 /yarn*
 /dist/bundle.*
+/dist/tailwind.css
