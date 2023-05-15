@@ -52,9 +52,7 @@ drawPigeonhole displayer colors i balls =
           ]
       , H.g []
           ( let
-              allBalls = concat
-                $ balls
-                <#> \{ nbBalls, edge } → replicate nbBalls edge
+              allBalls = balls >>= \{ nbBalls, edge } → replicate nbBalls edge
               height = toNumber $ min 95 (length allBalls)
             in
               pseudoShuffle
