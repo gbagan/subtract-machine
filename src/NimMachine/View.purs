@@ -8,7 +8,7 @@ import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
-import NimMachine.Graph (GraphDisplayer, Machine, Legend)
+import NimMachine.Graph (GraphDisplayer, Machine, MachineBox, Legend)
 import NimMachine.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
 import NimMachine.Msg (Msg(..))
 import NimMachine.Util (pseudoRandom, pseudoShuffle)
@@ -39,9 +39,9 @@ drawPigeonhole
   . GraphDisplayer Int Int
   → Array String
   → Int
-  → Array { edge ∷ Int, dest ∷ Int, nbBalls ∷ Int }
+  → MachineBox Int Int
   → Html a
-drawPigeonhole displayer colors i balls =
+drawPigeonhole displayer colors i box =
   H.maybe (displayer.position i) \{ x, y } →
     H.g [ H.style "transform" $ translate (px x) (px y) ]
       [ H.path
@@ -52,7 +52,7 @@ drawPigeonhole displayer colors i balls =
           ]
       , H.g []
           ( let
-              allBalls = balls >>= \{ nbBalls, edge } → replicate nbBalls edge
+              allBalls = box >>= \{ nbBalls, edge } → replicate nbBalls edge
               height = toNumber $ min 95 (length allBalls)
             in
               pseudoShuffle
@@ -67,9 +67,9 @@ drawPigeonhole displayer colors i balls =
           )
       , H.g []
           ( let
-              total = toNumber $ sum (_.nbBalls <$> balls)
+              total = toNumber $ sum (_.nbBalls <$> box)
             in
-              balls
+              box
                 # scanl
                     (\{ end } { nbBalls, edge } → { begin: end, end: end + toNumber nbBalls / total, edge })
                     { begin: 0.0, end: 0.0, edge: -1 }

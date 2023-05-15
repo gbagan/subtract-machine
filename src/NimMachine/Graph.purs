@@ -137,7 +137,7 @@ machinePlays
   ⇒ Machine v e
   → v
   → Gen (Maybe { edge ∷ e, dest ∷ v })
-machinePlays balls v =
-  randomPick $ balls' >>= \{ edge, dest, nbBalls } → replicate nbBalls { dest, edge }
+machinePlays machine v =
+  randomPick $ box >>= \{ edge, dest, nbBalls } → replicate nbBalls { dest, edge }
   where
-  balls' = Map.lookup v balls ?: []
+  box = Map.lookup v machine ?: []
