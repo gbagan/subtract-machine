@@ -2,7 +2,6 @@ module NimMachine.Graph where
 
 import Relude
 
-import Data.Array ((..))
 import Data.Map as Map
 import Data.Set as Set
 import NimMachine.Util (booleanMapToSet, randomPick)
@@ -129,7 +128,7 @@ expertPlays graph losing v
   | otherwise = pure $ do
       nbors ← Map.lookup v graph
       { edge, dest } ← nbors # find \{ dest } → Set.member dest losing
-      pure { edge, dest }
+      Just { edge, dest }
 
 -- | joue au hasard en fonction du nombre de balles de chaque couleur dans le casier
 machinePlays
@@ -141,4 +140,4 @@ machinePlays
 machinePlays balls v =
   randomPick $ balls' >>= \{ edge, dest, nbBalls } → replicate nbBalls { dest, edge }
   where
-  balls' = fromMaybe [] (Map.lookup v balls)
+  balls' = Map.lookup v balls ?: []

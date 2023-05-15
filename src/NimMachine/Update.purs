@@ -63,7 +63,7 @@ update (SetGraphType val) = changeConfig _{ graphType =
 
 update (SetNbBoxes n) = changeConfig $ _graphType %~
   case _ of
-    Nim _ moves → Nim (fromMaybe 8 (Int.fromString n)) moves
+    Nim _ moves → Nim (Int.fromString n ?: 8) moves
     x → x
 
 update (TogglePossibleMove i) = changeConfig $ _graphType %~
@@ -73,21 +73,21 @@ update (TogglePossibleMove i) = changeConfig $ _graphType %~
 
 update (SetKingWidth n) = changeConfig $ _graphType %~
   case _ of
-    King _ h → King (fromMaybe 3 (Int.fromString n)) h
+    King _ h → King (Int.fromString n ?: 3) h
     x → x
 
 update (SetKingHeight m) = changeConfig$ _graphType %~
   case _ of
-    King w _  → King w (fromMaybe 3 (Int.fromString m))
+    King w _  → King w (Int.fromString m ?: 3)
     x → x
 
-update (SetReward n) = changeConfig _{ reward = fromMaybe 3 (Int.fromString n) }
+update (SetReward n) = changeConfig _{ reward = Int.fromString n ?: 3 }
 
-update (SetPenalty n) = changeConfig _{ penalty = fromMaybe (-1) (Int.fromString n) }
+update (SetPenalty n) = changeConfig _{ penalty = Int.fromString n ?: (-1) }
 
 update (SetAdversary val) = changeConfig _{ adversary = adversaryFromString val }
 
-update (SetBallsPerColor n) = changeConfig _{ ballsPerColor = fromMaybe 6 (Int.fromString n) }
+update (SetBallsPerColor n) = changeConfig _{ ballsPerColor = Int.fromString n ?: 6 }
 
 update (SetMachineStarts val) = changeConfig _{ machineStarts = val == "y" }
 

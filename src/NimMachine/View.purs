@@ -2,7 +2,6 @@ module NimMachine.View (view) where
 
 import Relude
 
-import Data.Array ((..))
 import Data.Map as Map
 import Pha.Html (Html)
 import Pha.Html as H
@@ -64,7 +63,7 @@ drawPigeonhole displayer colors i balls =
                         [ P.cx $ 15.0 + pseudoRandom (i + j) * 71.0
                         , P.cy $ 100.0 - pseudoRandom (10 + i + j) * height
                         , P.r 5.0
-                        , P.fill $ fromMaybe "black" (colors !! color)
+                        , P.fill $ colors !! color ?: "black"
                         ]
           )
       , H.g []
@@ -82,7 +81,7 @@ drawPigeonhole displayer colors i balls =
                     , P.width $ 94.0 * (end - begin)
                     , P.height 20
                     , P.stroke "black"
-                    , P.fill $ fromMaybe "black" (colors !! edge)
+                    , P.fill $ colors !! edge ?: "black"
                     ]
           )
       , H.maybe (displayer.vertexLabel i) \label →
@@ -127,7 +126,7 @@ legendView legend colors =
           [ H.input
             [ P.type_ "color"
             , H.class_ "inline w-12 h-12"
-            , P.value $ fromMaybe "#000000" $ colors !! edge
+            , P.value $ colors !! edge ?: "#000000"
             , E.onValueChange (ColorChange edge)
             ]
           , H.span [ H.class_ "text-2xl" ] [ H.text $ " : " <> name ]
