@@ -7,8 +7,16 @@ import Data.Int as Int
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Pha.Update (Update, Milliseconds(..), delay)
-import NimMachine.Model ( Config, Model, GraphType(..), Status(..)
-                , initMachine, nextGame, adversaryFromString, updatePossibleMoves)
+import NimMachine.Model
+  ( Config
+  , Model
+  , GraphType(..)
+  , Status(..)
+  , initMachine
+  , nextGame
+  , adversaryFromString
+  , updatePossibleMoves
+  )
 import NimMachine.Msg (Msg(..))
 import Type.Proxy (Proxy(..))
 
@@ -16,9 +24,9 @@ type Env = { genState ∷ Ref GenState }
 
 type Update' model msg a = Update model msg (ReaderT Env Aff) a
 
-evalGen ∷ ∀model msg a. Gen a → Update' model msg a
+evalGen ∷ ∀ model msg a. Gen a → Update' model msg a
 evalGen g = do
-  {genState} ← ask
+  { genState } ← ask
   st ← liftEffect $ Ref.read genState
   let v /\ st' = runGen g st
   liftEffect $ Ref.write st' genState
@@ -57,9 +65,10 @@ update NextGame = do
   st ← get
   put =<< evalGen (nextGame st)
 
-update (SetGraphType val) = changeConfig _{ graphType =
-                              if val == "sub" then Nim 8 [1, 2] else King 3 3
-                          }
+update (SetGraphType val) = changeConfig _
+  { graphType =
+      if val == "sub" then Nim 8 [ 1, 2 ] else King 3 3
+  }
 
 update (SetNbBoxes n) = changeConfig $ _graphType %~
   case _ of
@@ -76,21 +85,21 @@ update (SetKingWidth n) = changeConfig $ _graphType %~
     King _ h → King (Int.fromString n ?: 3) h
     x → x
 
-update (SetKingHeight m) = changeConfig$ _graphType %~
+update (SetKingHeight m) = changeConfig $ _graphType %~
   case _ of
-    King w _  → King w (Int.fromString m ?: 3)
+    King w _ → King w (Int.fromString m ?: 3)
     x → x
 
-update (SetReward n) = changeConfig _{ reward = Int.fromString n ?: 3 }
+update (SetReward n) = changeConfig _ { reward = Int.fromString n ?: 3 }
 
-update (SetPenalty n) = changeConfig _{ penalty = Int.fromString n ?: (-1) }
+update (SetPenalty n) = changeConfig _ { penalty = Int.fromString n ?: (-1) }
 
-update (SetAdversary val) = changeConfig _{ adversary = adversaryFromString val }
+update (SetAdversary val) = changeConfig _ { adversary = adversaryFromString val }
 
-update (SetBallsPerColor n) = changeConfig _{ ballsPerColor = Int.fromString n ?: 6 }
+update (SetBallsPerColor n) = changeConfig _ { ballsPerColor = Int.fromString n ?: 6 }
 
-update (SetMachineStarts val) = changeConfig _{ machineStarts = val == "y" }
+update (SetMachineStarts val) = changeConfig _ { machineStarts = val == "y" }
 
 update (ColorChange i val) = _colors <<< ix i .= val
 
-update (SetFastMode b) = modify_ _{fastMode = b}
+update (SetFastMode b) = modify_ _ { fastMode = b }

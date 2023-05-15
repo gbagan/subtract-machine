@@ -28,22 +28,23 @@ inputNumberClass = "block w-full px-3 py-1.5 text-base font-normal text-gray-700
 cardClass ∷ String
 cardClass = "rounded overflow-hidden shadow-lg p-4"
 
-card ∷ forall a. String → Array (Html a) → Html a
+card ∷ ∀ a. String → Array (Html a) → Html a
 card title body =
-  H.div [ H.class_ cardClass ] $
-    [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text title ] ] <> body
-  
+  H.div [ H.class_ cardClass ]
+    $ [ H.div [ H.class_ "font-bold text-xl mb-2" ] [ H.text title ] ]
+    <> body
+
 drawPigeonhole
-  ∷ forall a
-   . GraphDisplayer Int Int
+  ∷ ∀ a
+  . GraphDisplayer Int Int
   → Array String
   → Int
   → Array { edge ∷ Int, dest ∷ Int, nbBalls ∷ Int }
   → Html a
 drawPigeonhole displayer colors i balls =
   H.maybe (displayer.position i) \{ x, y } →
-    H.g [ H.style "transform" $ translate (px x) (px y) ]   
-      [ H.path 
+    H.g [ H.style "transform" $ translate (px x) (px y) ]
+      [ H.path
           [ P.d "M1 1 L10 109 L90 109 L99 1"
           , P.strokeWidth 3.0
           , P.stroke "#000"
@@ -53,18 +54,18 @@ drawPigeonhole displayer colors i balls =
           ( let
               allBalls = concat
                 $ balls
-                    <#> \{ nbBalls, edge } → replicate nbBalls edge
+                <#> \{ nbBalls, edge } → replicate nbBalls edge
               height = toNumber $ min 95 (length allBalls)
             in
-              pseudoShuffle $
-                allBalls
-                  # mapWithIndex \j color →
-                      H.circle
-                        [ P.cx $ 15.0 + pseudoRandom (i + j) * 71.0
-                        , P.cy $ 100.0 - pseudoRandom (10 + i + j) * height
-                        , P.r 5.0
-                        , P.fill $ colors !! color ?: "black"
-                        ]
+              pseudoShuffle
+                $ allBalls
+                # mapWithIndex \j color →
+                    H.circle
+                      [ P.cx $ 15.0 + pseudoRandom (i + j) * 71.0
+                      , P.cy $ 100.0 - pseudoRandom (10 + i + j) * height
+                      , P.r 5.0
+                      , P.fill $ colors !! color ?: "black"
+                      ]
           )
       , H.g []
           ( let
@@ -85,10 +86,10 @@ drawPigeonhole displayer colors i balls =
                     ]
           )
       , H.maybe (displayer.vertexLabel i) \label →
-          H.text_ label [P.x 50, P.y 150]
+          H.text_ label [ P.x 50, P.y 150 ]
       ]
 
-scoreView ∷ forall a. Int → Int → Html a
+scoreView ∷ ∀ a. Int → Int → Html a
 scoreView nbVictories nbLosses =
   H.div [ H.class_ "flex flex-row justify-between mt-4 mb-2" ]
     [ H.span [ H.class_ "text-blue-600 font-bold" ] [ H.text $ "Victoires: " <> show nbVictories ]
@@ -109,26 +110,27 @@ scoreView nbVictories nbLosses =
     , H.span [ H.class_ "text-red-600 font-bold" ] [ H.text $ "Défaites: " <> show nbLosses ]
     ]
 
-machineView ∷ forall a. GraphDisplayer Int Int → Array String → Machine Int Int → Html a
+machineView ∷ ∀ a. GraphDisplayer Int Int → Array String → Machine Int Int → Html a
 machineView displayer colors machine =
   H.div [ H.class_ "w-[42vw]" ]
     [ H.svg [ P.viewBox 0 0 displayer.width displayer.height ]
         $ machine
-            # Map.toUnfoldable
-            <#> uncurry (drawPigeonhole displayer colors)
+        # Map.toUnfoldable
+        <#> uncurry (drawPigeonhole displayer colors)
     ]
 
 legendView ∷ Legend Int → Array String → Html Msg
 legendView legend colors =
   card "Légende"
-    [ H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
-        legend >>= \{ edge, name } →
+    [ H.div [ H.class_ "grid grid-cols-2 gap-4" ]
+        $ legend
+        >>= \{ edge, name } →
           [ H.input
-            [ P.type_ "color"
-            , H.class_ "inline w-12 h-12"
-            , P.value $ colors !! edge ?: "#000000"
-            , E.onValueChange (ColorChange edge)
-            ]
+              [ P.type_ "color"
+              , H.class_ "inline w-12 h-12"
+              , P.value $ colors !! edge ?: "#000000"
+              , E.onValueChange (ColorChange edge)
+              ]
           , H.span [ H.class_ "text-2xl" ] [ H.text $ " : " <> name ]
           ]
     ]
@@ -136,116 +138,118 @@ legendView legend colors =
 configView ∷ Config → Status → Html Msg
 configView conf status =
   card "Choix des paramètres"
-    [ H.div [ H.class_ "grid grid-cols-2 gap-4" ] $
-        [ H.div [] [ H.text "type de jeu" ]
-        , H.select
-            [ H.class_ selectClass
-            , P.value $ case conf.graphType of
-                Nim _ _ → "nim"
-                King _ _ → "king"
-            , E.onValueChange SetGraphType
-            ]
-            [ H.option [ P.value "nim" ] [ H.text "Nim" ]
-            , H.option [ P.value "king" ] [ H.text "Roi" ]
-            ]
-        ]
-          <>
-            ( case conf.graphType of
-                Nim nbBoxes possibleMoves →
-                  [ H.div [] [ H.text "Nombre de casiers" ]
-                  , H.select
-                      [ H.class_ selectClass
-                      , P.value $ show nbBoxes
-                      , E.onValueChange SetNbBoxes
-                      ] $ (8 .. 16) <#> \i →
-                      H.option [ P.value (show i) ] [ H.text (show i) ]
-                  , H.div [] [ H.text "Coups possibles" ]
-                  , H.div [ H.class_ "flex flex-row justify-between" ]
-                      $ (1 .. 5)
-                          <#> \i →
-                            H.label []
-                              [ H.input
-                                  [ P.type_ "checkbox"
-                                  , P.checked (elem i possibleMoves)
-                                  , H.class_ checkboxClass
-                                  , E.onChecked \_ → TogglePossibleMove i
-                                  ]
-                              , H.span [ H.class_ "ml-2 text-sm font-medium text-gray-900" ] [ H.text $ show i ]
-                              ]
-                  ]
-                King width height →
-                  [ H.div [] [ H.text "Hauteur de la grille" ]
-                  , H.select
-                      [ H.class_ selectClass
-                      , P.value $ show height
-                      , E.onValueChange SetKingHeight
-                      ] $ (3 .. 6) <#> \i →
-                      H.option [ P.value (show i) ] [ H.text (show i) ]
-                  , H.div [] [ H.text "Largeur de la grille" ]
-                  , H.select
-                      [ H.class_ selectClass
-                      , P.value $ show width
-                      , E.onValueChange SetKingWidth
-                      ] $ (3 .. 6) <#> \i →
-                      H.option [ P.value (show i) ] [ H.text (show i) ]
-                  ]
-            )
-          <>
-            [ H.div [] [ H.text "Adversaire" ]
-            , H.elem "select"
-                [ H.class_ selectClass
-                , P.value (adversaryToString conf.adversary)
-                , E.onValueChange SetAdversary
+    [ H.div [ H.class_ "grid grid-cols-2 gap-4" ]
+        $
+          [ H.div [] [ H.text "type de jeu" ]
+          , H.select
+              [ H.class_ selectClass
+              , P.value $ case conf.graphType of
+                  Nim _ _ → "nim"
+                  King _ _ → "king"
+              , E.onValueChange SetGraphType
+              ]
+              [ H.option [ P.value "nim" ] [ H.text "Nim" ]
+              , H.option [ P.value "king" ] [ H.text "Roi" ]
+              ]
+          ]
+        <>
+          ( case conf.graphType of
+              Nim nbBoxes possibleMoves →
+                [ H.div [] [ H.text "Nombre de casiers" ]
+                , H.select
+                    [ H.class_ selectClass
+                    , P.value $ show nbBoxes
+                    , E.onValueChange SetNbBoxes
+                    ] $ (8 .. 16) <#> \i →
+                    H.option [ P.value (show i) ] [ H.text (show i) ]
+                , H.div [] [ H.text "Coups possibles" ]
+                , H.div [ H.class_ "flex flex-row justify-between" ]
+                    $ (1 .. 5)
+                    <#> \i →
+                      H.label []
+                        [ H.input
+                            [ P.type_ "checkbox"
+                            , P.checked (elem i possibleMoves)
+                            , H.class_ checkboxClass
+                            , E.onChecked \_ → TogglePossibleMove i
+                            ]
+                        , H.span [ H.class_ "ml-2 text-sm font-medium text-gray-900" ] [ H.text $ show i ]
+                        ]
                 ]
-                [ H.elem "option" [ P.value "random" ] [ H.text "Aléatoire" ]
-                , H.elem "option" [ P.value "expert" ] [ H.text "Expert" ]
-                , H.elem "option" [ P.value "machine" ] [ H.text "Machine" ]
+              King width height →
+                [ H.div [] [ H.text "Hauteur de la grille" ]
+                , H.select
+                    [ H.class_ selectClass
+                    , P.value $ show height
+                    , E.onValueChange SetKingHeight
+                    ] $ (3 .. 6) <#> \i →
+                    H.option [ P.value (show i) ] [ H.text (show i) ]
+                , H.div [] [ H.text "Largeur de la grille" ]
+                , H.select
+                    [ H.class_ selectClass
+                    , P.value $ show width
+                    , E.onValueChange SetKingWidth
+                    ] $ (3 .. 6) <#> \i →
+                    H.option [ P.value (show i) ] [ H.text (show i) ]
                 ]
-            , H.div [] [ H.text "Billes par couleur" ]
-            , H.input
-                [ P.type_ "number"
-                , H.class_ inputNumberClass
-                , P.min 2
-                , P.max 10
-                , P.value $ show conf.ballsPerColor
-                , E.onValueChange SetBallsPerColor
-                ]
-            , H.div [] [ H.text "Récompense" ]
-            , H.input
-                [ P.type_ "number"
-                , H.class_ inputNumberClass
-                , P.min 1
-                , P.value (show conf.reward)
-                , E.onValueChange SetReward
-                ]
-            , H.div [] [ H.text "Pénalité" ]
-            , H.input
-                [ P.type_ "number"
-                , H.class_ inputNumberClass
-                , P.max 0
-                , P.value (show conf.penalty)
-                , E.onValueChange SetPenalty
-                ]
-            , H.div [] [ H.text "La machine commence" ]
-            , H.select
-                [ H.class_ selectClass
-                , P.value (if conf.machineStarts then "y" else "n")
-                , E.onValueChange SetMachineStarts
-                ]
-                [ H.option [ P.value "y" ] [ H.text "Oui" ]
-                , H.option [ P.value "n" ] [ H.text "Non" ]
-                ]
-            , if status == Stopped then
-                H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
-              else
-                H.button [ H.class_ buttonClass, E.onClick \_ → StopMachine ] [ H.text "Arrêter la machine" ]
-            , H.button 
+          )
+        <>
+          [ H.div [] [ H.text "Adversaire" ]
+          , H.elem "select"
+              [ H.class_ selectClass
+              , P.value (adversaryToString conf.adversary)
+              , E.onValueChange SetAdversary
+              ]
+              [ H.elem "option" [ P.value "random" ] [ H.text "Aléatoire" ]
+              , H.elem "option" [ P.value "expert" ] [ H.text "Expert" ]
+              , H.elem "option" [ P.value "machine" ] [ H.text "Machine" ]
+              ]
+          , H.div [] [ H.text "Billes par couleur" ]
+          , H.input
+              [ P.type_ "number"
+              , H.class_ inputNumberClass
+              , P.min 2
+              , P.max 10
+              , P.value $ show conf.ballsPerColor
+              , E.onValueChange SetBallsPerColor
+              ]
+          , H.div [] [ H.text "Récompense" ]
+          , H.input
+              [ P.type_ "number"
+              , H.class_ inputNumberClass
+              , P.min 1
+              , P.value (show conf.reward)
+              , E.onValueChange SetReward
+              ]
+          , H.div [] [ H.text "Pénalité" ]
+          , H.input
+              [ P.type_ "number"
+              , H.class_ inputNumberClass
+              , P.max 0
+              , P.value (show conf.penalty)
+              , E.onValueChange SetPenalty
+              ]
+          , H.div [] [ H.text "La machine commence" ]
+          , H.select
+              [ H.class_ selectClass
+              , P.value (if conf.machineStarts then "y" else "n")
+              , E.onValueChange SetMachineStarts
+              ]
+              [ H.option [ P.value "y" ] [ H.text "Oui" ]
+              , H.option [ P.value "n" ] [ H.text "Non" ]
+              ]
+          , if status == Stopped then
+              H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
+            else
+              H.button [ H.class_ buttonClass, E.onClick \_ → StopMachine ] [ H.text "Arrêter la machine" ]
+          , H.button
               [ H.class_ buttonClass
               , E.onPointerDown \_ → SetFastMode true
               , E.onPointerUp \_ → SetFastMode false
               , E.onPointerLeave \_ → SetFastMode false
-              ] [ H.text "Accélerer" ]
-            ]
+              ]
+              [ H.text "Accélerer" ]
+          ]
     ]
 
 view ∷ Model → Html Msg

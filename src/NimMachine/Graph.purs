@@ -17,7 +17,7 @@ type GraphDisplayer v e =
   , vertexLabel ∷ v → Maybe String
   }
 
-defaultDisplayer ∷ forall v e. GraphDisplayer v e
+defaultDisplayer ∷ ∀ v e. GraphDisplayer v e
 defaultDisplayer =
   { width: 0
   , height: 0

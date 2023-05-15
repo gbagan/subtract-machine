@@ -2,7 +2,6 @@ module NimMachine.Model where
 
 import Relude
 
-import Control.Monad.Rec.Class (tailRecM, Step(..))
 import Data.Map as Map
 import Data.Set as Set
 import NimMachine.Graph
@@ -29,14 +28,13 @@ data Status = Running | IsStopping | Stopped
 
 derive instance Eq Status
 
-
 baseColors ∷ Array String
 baseColors =
-  [ "#f6b73c"  -- yellow
+  [ "#f6b73c" -- yellow
   , "#ff0000" --red
   , "#00ffff" --cyan"
   , "#90ee90" -- light green 
-  , "#900090"  --magenta" 
+  , "#900090" --magenta" 
   ]
 
 type GameResult =
@@ -72,7 +70,7 @@ type Model =
   , status ∷ Status
   , displayer ∷ GraphDisplayer Int Int
   , colors ∷ Array String
-  , fastMode ∷ Boolean 
+  , fastMode ∷ Boolean
   }
 
 adversaryFromString ∷ String → Adversary
@@ -102,13 +100,13 @@ machinePlays' model = machinePlays model.machine
 
 -- | lance une partie et renvoie le résultat
 runGame ∷ Model → Gen GameResult
-runGame model = tailRecM go { moves: [], pos: model.source, isMachineTurn: model.config.machineStarts }
+runGame model = go { moves: [], pos: model.source, isMachineTurn: model.config.machineStarts }
   where
   go { pos, moves, isMachineTurn } = do
     mmove ← (if isMachineTurn then machinePlays' else adversaryPlays) model pos
     case mmove of
-      Nothing → pure $ Done { moves, win: not isMachineTurn }
-      Just { edge, dest } → pure $ Loop
+      Nothing → pure { moves, win: not isMachineTurn }
+      Just { edge, dest } → go
         { moves: snoc moves { pos, edge, isMachineTurn }
         , isMachineTurn: not isMachineTurn
         , pos: dest
@@ -147,9 +145,10 @@ adjustBalls model { moves, win } =
         model.machine
     <#> \balls →
       -- si il n'y a plus de balles dans un casier, on en remet
-      if all ((_ == 0) <<< _.nbBalls) balls
-      then balls <#> _ { nbBalls = model.config.ballsPerColor }
-      else balls
+      if all ((_ == 0) <<< _.nbBalls) balls then
+        balls <#> _ { nbBalls = model.config.ballsPerColor }
+      else
+        balls
 
 -- | simule une partie et ajuste les billes en fonction du résultat
 nextGame ∷ Model → Gen Model

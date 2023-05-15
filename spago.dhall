@@ -9,7 +9,6 @@
   , "prelude"
   , "refs"
   , "relude"
-  , "tailrec"
   , "transformers"
   ]
 , packages = ./packages.dhall
