@@ -67,7 +67,7 @@ update NextGame = do
 
 update (SetGraphType val) = changeConfig _
   { graphType =
-      if val == "sub" then Nim 8 [ 1, 2 ] else King 3 3
+      if val == "nim" then Nim 8 [ 1, 2 ] else King 3 3
   }
 
 update (SetNbBoxes n) = changeConfig $ _graphType %~
