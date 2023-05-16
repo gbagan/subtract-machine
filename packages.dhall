@@ -5,7 +5,20 @@ let upstream =
 let overrides = {=}
 
 let additions =
-      { relude =
+      { pha =
+        { dependencies =
+          [ "aff"
+          , "effect"
+          , "free"
+          , "prelude"
+          , "unsafe-reference"
+          , "web-uievents"
+          , "web-pointerevents"
+          ]
+        , repo = "https://github.com/gbagan/purescript-pha.git"
+        , version = "master"
+        }
+      , relude =
         { dependencies =
           [ "aff"
           , "arrays"

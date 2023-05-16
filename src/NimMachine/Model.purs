@@ -3,22 +3,8 @@ module NimMachine.Model where
 import Relude
 
 import Data.Map as Map
-import Data.Set as Set
-import NimMachine.Graph
-  ( Machine
-  , GraphDisplayer
-  , graphToMachine
-  , defaultDisplayer
-  , expertPlays
-  , kingDisplayer
-  , kingGraph'
-  , losingPositions
-  , machinePlays
-  , randomPlays
-  , source
-  , nimDisplayer
-  , nimGraph
-  )
+import NimMachine.Graph (Machine, Graph, GraphDisplayer, graphToMachine, expertPlays, kingDisplayer, kingGraph', losingPositions, machinePlays, randomPlays, source, nimDisplayer, nimGraph)
+import Pha.Util (memoCompose)
 
 data Adversary = Random | Expert | Machine
 
@@ -62,16 +48,29 @@ type Config =
 
 type Model =
   { config ∷ Config
-  , source ∷ Int
   , nbVictories ∷ Int
   , nbLosses ∷ Int
   , machine ∷ Machine Int Int
-  , losingPositions ∷ Set Int
   , status ∷ Status
-  , displayer ∷ GraphDisplayer Int Int
   , colors ∷ Array String
   , fastMode ∷ Boolean
   }
+
+getDisplayer ∷ Model → GraphDisplayer Int Int
+getDisplayer = memoCompose _.config.graphType case _ of
+  Nim _ moves → nimDisplayer moves
+  King n m → kingDisplayer n m
+
+getGraph ∷ Model → Graph Int Int
+getGraph = memoCompose _.config.graphType case _ of
+  Nim nb possibleMoves → nimGraph nb possibleMoves
+  King n m → kingGraph' n m
+
+getLosingPositions ∷ Model → Set Int
+getLosingPositions = memoCompose getGraph losingPositions
+
+getSource ∷ Model → Int
+getSource = memoCompose getGraph source
 
 adversaryFromString ∷ String → Adversary
 adversaryFromString "expert" = Expert
@@ -92,7 +91,7 @@ adversaryPlays ∷ Model → Int → Gen (Maybe { edge ∷ Int, dest ∷ Int })
 adversaryPlays model pos =
   case model.config.adversary of
     Random → randomPlays model.machine pos
-    Expert → expertPlays model.machine model.losingPositions pos
+    Expert → expertPlays model.machine (getLosingPositions model) pos
     Machine → machinePlays model.machine pos
 
 machinePlays' ∷ Model → Int → Gen (Maybe { edge ∷ Int, dest ∷ Int })
@@ -100,7 +99,7 @@ machinePlays' model = machinePlays model.machine
 
 -- | lance une partie et renvoie le résultat
 runGame ∷ Model → Gen GameResult
-runGame model = go { moves: [], pos: model.source, isMachineTurn: model.config.machineStarts }
+runGame model = go { moves: [], pos: getSource model, isMachineTurn: model.config.machineStarts }
   where
   go { pos, moves, isMachineTurn } = do
     mmove ← (if isMachineTurn then machinePlays' else adversaryPlays) model pos
@@ -160,33 +159,22 @@ initMachine ∷ Model → Model
 initMachine model =
   model
     { machine = machine
-    , source = source graph
     , nbVictories = 0
     , nbLosses = 0
-    , losingPositions = losingPositions graph
     , status = Stopped
-    , displayer = displayer
     }
   where
-  graph = case model.config.graphType of
-    Nim nb possibleMoves → nimGraph nb possibleMoves
-    King n m → kingGraph' n m
+  graph = getGraph model
   machine = graphToMachine model.config.ballsPerColor graph
-  displayer = case model.config.graphType of
-    Nim _ moves → nimDisplayer moves
-    King n m → kingDisplayer n m
 
 -- | modèle initial
 init ∷ Model
 init = initMachine
   { config
-  , source: 0
   , nbVictories: 0
   , nbLosses: 0
   , machine: Map.empty
-  , losingPositions: Set.empty
   , status: Stopped
-  , displayer: defaultDisplayer
   , colors: baseColors
   , fastMode: false
   }

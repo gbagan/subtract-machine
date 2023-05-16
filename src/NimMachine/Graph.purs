@@ -17,15 +17,6 @@ type GraphDisplayer v e =
   , vertexLabel ∷ v → Maybe String
   }
 
-defaultDisplayer ∷ ∀ v e. GraphDisplayer v e
-defaultDisplayer =
-  { width: 0
-  , height: 0
-  , position: const Nothing
-  , legend: []
-  , vertexLabel: const Nothing
-  }
-
 source ∷ ∀ v e. Graph v e → v
 source (Graph _ s) = s
 

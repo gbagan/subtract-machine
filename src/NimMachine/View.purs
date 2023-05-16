@@ -9,7 +9,7 @@ import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
 import NimMachine.Graph (GraphDisplayer, Machine, MachineBox, Legend)
-import NimMachine.Model (Config, Model, Status(..), GraphType(..), adversaryToString)
+import NimMachine.Model (Config, Model, Status(..), GraphType(..), adversaryToString, getDisplayer)
 import NimMachine.Msg (Msg(..))
 import NimMachine.Util (pseudoRandom, pseudoShuffle)
 
@@ -84,7 +84,7 @@ drawPigeonhole displayer colors i box =
                     ]
           )
       , H.maybe (displayer.vertexLabel i) \label →
-          H.text_ label [ P.x 50, P.y 150 ]
+          H.text_ [ P.x 50, P.y 150 ] [ H.text label ]
       ]
 
 scoreView ∷ ∀ a. Int → Int → Html a
@@ -255,10 +255,12 @@ view model =
   H.div [ H.class_ "w-screen flex flex-row justify-around items-start" ]
     [ card "Visualisation de la machine"
         [ H.div [ H.class_ "flex flex-col" ]
-            [ machineView model.displayer model.colors model.machine
+            [ machineView displayer model.colors model.machine
             , scoreView model.nbVictories model.nbLosses
             ]
         ]
-    , H.lazy2 legendView model.displayer.legend model.colors
+    , H.lazy2 legendView displayer.legend model.colors
     , H.lazy2 configView model.config model.status
     ]
+  where
+  displayer = getDisplayer model
