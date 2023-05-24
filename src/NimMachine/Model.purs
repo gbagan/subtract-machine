@@ -63,7 +63,7 @@ getDisplayer = memoCompose _.config.graphType case _ of
 
 getGraph ∷ Model → Graph Int Int
 getGraph = memoCompose _.config.graphType case _ of
-  Nim nb possibleMoves → nimGraph nb possibleMoves
+  Nim nb moves → nimGraph nb moves
   King n m → kingGraph' n m
 
 getLosingPositions ∷ Model → Set Int
