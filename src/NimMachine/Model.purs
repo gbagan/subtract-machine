@@ -120,6 +120,7 @@ adjustBalls model { moves, win } =
     , nbLosses = model.nbLosses + (if win then 0 else 1)
     }
   where
+  -- ajustement des billes pour un casier et une couleur de billes donnés
   adjustBalls' isMachineTurn nbBalls =
     max 0
       ( nbBalls +
@@ -131,15 +132,16 @@ adjustBalls model { moves, win } =
               model.config.penalty
           )
       )
-
+  -- la machine après ajustement des billes
   machine = moves
     # foldr
         ( \{ isMachineTurn, pos, edge } →
-            flip Map.update pos
+            Map.update
               ( Just <<< map \nbor@{ edge: e, nbBalls } →
                   if edge /= e then nbor
                   else nbor { nbBalls = adjustBalls' isMachineTurn nbBalls }
               )
+              pos
         )
         model.machine
     <#> \balls →
