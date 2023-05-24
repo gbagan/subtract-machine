@@ -9,9 +9,9 @@ import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
 import NimMachine.Graph (GraphDisplayer, Machine, MachineBox, Legend)
-import NimMachine.Model (Config, Model, Status(..), GraphType(..), adversaryToString, getDisplayer)
+import NimMachine.Model (Config, Model, GraphType(..), adversaryToString, getDisplayer)
 import NimMachine.Msg (Msg(..))
-import NimMachine.Util (pseudoRandom, pseudoShuffle)
+import NimMachine.Helpers (pseudoRandom, pseudoShuffle)
 
 buttonClass ∷ String
 buttonClass = "py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200"
@@ -133,8 +133,8 @@ legendView legend colors =
           ]
     ]
 
-configView ∷ Config → Status → Html Msg
-configView conf status =
+configView ∷ Config → Boolean → Html Msg
+configView conf isRunning =
   card "Choix des paramètres"
     [ H.div [ H.class_ "grid grid-cols-2 gap-4" ]
         $
@@ -236,10 +236,10 @@ configView conf status =
               [ H.option [ P.value "y" ] [ H.text "Oui" ]
               , H.option [ P.value "n" ] [ H.text "Non" ]
               ]
-          , if status == Stopped then
-              H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
-            else
+          , if isRunning then
               H.button [ H.class_ buttonClass, E.onClick \_ → StopMachine ] [ H.text "Arrêter la machine" ]
+            else
+              H.button [ H.class_ buttonClass, E.onClick \_ → RunMachine ] [ H.text "Lancer la machine" ]
           , H.button
               [ H.class_ buttonClass
               , E.onPointerDown \_ → SetFastMode true
@@ -260,7 +260,7 @@ view model =
             ]
         ]
     , H.lazy2 legendView displayer.legend model.colors
-    , H.lazy2 configView model.config model.status
+    , H.lazy2 configView model.config model.isRunning
     ]
   where
   displayer = getDisplayer model

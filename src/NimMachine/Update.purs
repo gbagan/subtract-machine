@@ -11,7 +11,6 @@ import NimMachine.Model
   ( Config
   , Model
   , GraphType(..)
-  , Status(..)
   , initMachine
   , nextGame
   , adversaryFromString
@@ -47,27 +46,24 @@ changeConfig f = modify_ $ initMachine <<< (_config %~ f)
 
 update ∷ Msg → Update' Model Msg Unit
 update RunMachine = do
-  modify_ _ { status = Running }
+  modify_ _ { isRunning = true }
   go
   where
   go = do
     st ← get
-    if st.status /= Running then do
-      put st { status = Stopped }
-    else do
+    when st.isRunning do
       update NextGame
       delay (Milliseconds $ if st.fastMode then 100.0 else 500.0)
       go
 
-update StopMachine = modify_ _ { status = IsStopping }
+update StopMachine = modify_ _ { isRunning = false }
 
 update NextGame = do
   st ← get
   put =<< evalGen (nextGame st)
 
 update (SetGraphType val) = changeConfig _
-  { graphType =
-      if val == "nim" then Nim 8 [ 1, 2 ] else King 3 3
+  { graphType = if val == "nim" then Nim 8 [ 1, 2 ] else King 3 3
   }
 
 update (SetNbBoxes n) = changeConfig $ _graphType %~

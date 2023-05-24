@@ -1,4 +1,4 @@
-module NimMachine.Util where
+module NimMachine.Helpers where
 
 import Relude
 

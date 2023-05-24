@@ -4,7 +4,7 @@ import Relude
 
 import Data.Map as Map
 import Data.Set as Set
-import NimMachine.Util (booleanMapToSet, randomPick)
+import NimMachine.Helpers (booleanMapToSet, randomPick)
 
 data Graph v e = Graph (Map v (Array { edge ∷ e, dest ∷ v })) v
 type Legend e = Array { edge ∷ e, name ∷ String }

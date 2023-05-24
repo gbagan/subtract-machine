@@ -3,16 +3,26 @@ module NimMachine.Model where
 import Relude
 
 import Data.Map as Map
-import NimMachine.Graph (Machine, Graph, GraphDisplayer, graphToMachine, expertPlays, kingDisplayer, kingGraph', losingPositions, machinePlays, randomPlays, source, nimDisplayer, nimGraph)
+import NimMachine.Graph
+  ( Machine
+  , Graph
+  , GraphDisplayer
+  , graphToMachine
+  , expertPlays
+  , kingDisplayer
+  , kingGraph'
+  , losingPositions
+  , machinePlays
+  , randomPlays
+  , source
+  , nimDisplayer
+  , nimGraph
+  )
 import Pha.Util (memoCompose)
 
 data Adversary = Random | Expert | Machine
 
 derive instance Eq Adversary
-
-data Status = Running | IsStopping | Stopped
-
-derive instance Eq Status
 
 baseColors ∷ Array String
 baseColors =
@@ -51,7 +61,7 @@ type Model =
   , nbVictories ∷ Int
   , nbLosses ∷ Int
   , machine ∷ Machine Int Int
-  , status ∷ Status
+  , isRunning ∷ Boolean
   , colors ∷ Array String
   , fastMode ∷ Boolean
   }
@@ -163,7 +173,7 @@ initMachine model =
     { machine = machine
     , nbVictories = 0
     , nbLosses = 0
-    , status = Stopped
+    , isRunning = false
     }
   where
   graph = getGraph model
@@ -176,7 +186,7 @@ init = initMachine
   , nbVictories: 0
   , nbLosses: 0
   , machine: Map.empty
-  , status: Stopped
+  , isRunning: false
   , colors: baseColors
   , fastMode: false
   }
