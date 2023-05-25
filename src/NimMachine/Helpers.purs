@@ -8,7 +8,7 @@ import Data.Map as Map
 import Data.Set as Set
 
 map2 ∷ ∀ a b c. Array a → Array b → (a → b → c) → Array c
-map2 t1 t2 fn = zipWith ($) (map fn t1) t2
+map2 t1 t2 fn = zipWith fn t1 t2
 
 randomPick ∷ ∀ a. Array a → Gen (Maybe a)
 randomPick [] = pure Nothing
