@@ -10,8 +10,8 @@ data Graph v e = Graph (Map v (Array { edge ∷ e, dest ∷ v })) v
 type Legend e = Array { edge ∷ e, name ∷ String }
 
 type GraphDisplayer v e =
-  { width ∷ Int
-  , height ∷ Int
+  { width ∷ Number
+  , height ∷ Number
   , position ∷ v → Maybe { x ∷ Number, y ∷ Number }
   , legend ∷ Legend e
   , vertexLabel ∷ v → Maybe String
@@ -45,8 +45,8 @@ nimGraph n moves = Graph (Map.fromFoldable $ 0 .. n <#> \i → i /\ nbors i) n
 
 nimDisplayer ∷ Array Int → GraphDisplayer Int Int
 nimDisplayer moves =
-  { width: 800
-  , height: 400
+  { width: 800.0
+  , height: 400.0
   , position: \v →
       if v == 0 then Nothing
       else if v <= 8 then Just { x: toNumber (v - 1) * 100.0, y: 0.0 }
@@ -75,8 +75,8 @@ kingGraph' width height =
 
 kingDisplayer ∷ Int → Int → GraphDisplayer Int Int
 kingDisplayer width height =
-  { width: 180 * maxdim
-  , height: 180 * maxdim
+  { width: 180.0 * toNumber maxdim
+  , height: 180.0 * toNumber maxdim
   , position: \v →
       if v == 0 then Nothing
       else Just

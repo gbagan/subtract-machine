@@ -8,6 +8,8 @@ import Pha.Html as H
 import Pha.Html.Attributes as P
 import Pha.Html.Events as E
 import Pha.Html.Util (pc, px, translate)
+import Pha.Svg as S
+import Pha.Svg.Attributes as SA
 import NimMachine.Graph (GraphDisplayer, Machine, MachineBox, Legend)
 import NimMachine.Model (Config, Model, GraphType(..), adversaryToString, getDisplayer)
 import NimMachine.Msg (Msg(..))
@@ -43,14 +45,14 @@ drawPigeonhole
   → Html a
 drawPigeonhole displayer colors i box =
   H.maybe (displayer.position i) \{ x, y } →
-    H.g [ H.style "transform" $ translate (px x) (px y) ]
-      [ H.path
-          [ P.d "M1 1 L10 109 L90 109 L99 1"
-          , P.strokeWidth 3.0
-          , P.stroke "#000"
-          , P.fill "transparent"
+    S.g [ H.style "transform" $ translate (px x) (px y) ]
+      [ S.path
+          [ SA.d "M1 1 L10 109 L90 109 L99 1"
+          , SA.strokeWidth 3.0
+          , SA.stroke "#000"
+          , SA.fill "transparent"
           ]
-      , H.g []
+      , S.g []
           ( let
               allBalls = box >>= \{ nbBalls, edge } → replicate nbBalls edge
               height = toNumber $ min 95 (length allBalls)
@@ -58,14 +60,14 @@ drawPigeonhole displayer colors i box =
               pseudoShuffle
                 $ allBalls
                 # mapWithIndex \j color →
-                    H.circle
-                      [ P.cx $ 15.0 + pseudoRandom (i + j) * 71.0
-                      , P.cy $ 100.0 - pseudoRandom (10 + i + j) * height
-                      , P.r 5.0
-                      , P.fill $ colors !! color ?: "black"
+                    S.circle
+                      [ SA.cx $ 15.0 + pseudoRandom (i + j) * 71.0
+                      , SA.cy $ 100.0 - pseudoRandom (10 + i + j) * height
+                      , SA.r 5.0
+                      , SA.fill $ colors !! color ?: "black"
                       ]
           )
-      , H.g []
+      , S.g []
           ( let
               total = toNumber $ sum (_.nbBalls <$> box)
             in
@@ -74,17 +76,17 @@ drawPigeonhole displayer colors i box =
                     (\{ end } { nbBalls, edge } → { begin: end, end: end + toNumber nbBalls / total, edge })
                     { begin: 0.0, end: 0.0, edge: -1 }
                 <#> \{ begin, end, edge } →
-                  H.rect
-                    [ P.x $ 3.0 + 94.0 * begin
-                    , P.y 115.0
-                    , P.width $ 94.0 * (end - begin)
-                    , P.height 20
-                    , P.stroke "black"
-                    , P.fill $ colors !! edge ?: "black"
+                  S.rect
+                    [ SA.x $ 3.0 + 94.0 * begin
+                    , SA.y 115.0
+                    , SA.width $ 94.0 * (end - begin)
+                    , SA.height 20
+                    , SA.stroke "black"
+                    , SA.fill $ colors !! edge ?: "black"
                     ]
           )
       , H.maybe (displayer.vertexLabel i) \label →
-          H.text_ [ P.x 50, P.y 150 ] [ H.text label ]
+          S.text [ SA.x 50, SA.y 150 ] [ H.text label ]
       ]
 
 scoreView ∷ ∀ a. Int → Int → Html a
@@ -111,7 +113,7 @@ scoreView nbVictories nbLosses =
 machineView ∷ ∀ a. GraphDisplayer Int Int → Array String → Machine Int Int → Html a
 machineView displayer colors machine =
   H.div [ H.class_ "w-[42vw]" ]
-    [ H.svg [ P.viewBox 0 0 displayer.width displayer.height ]
+    [ S.svg [ SA.viewBox 0.0 0.0 displayer.width displayer.height ]
         $ machine
         # Map.toUnfoldable
         <#> uncurry (drawPigeonhole displayer colors)

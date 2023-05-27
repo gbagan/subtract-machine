@@ -16,7 +16,7 @@ let additions =
           , "web-pointerevents"
           ]
         , repo = "https://github.com/gbagan/purescript-pha.git"
-        , version = "v0.11.2"
+        , version = "master"
         }
       , relude =
         { dependencies =
